@@ -3,7 +3,7 @@
 // Enables offline caching for app shell
 // ==========================================
 
-const CACHE_NAME = 'dairy-delight-v4';
+const CACHE_NAME = 'dairy-delight-v5';
 
 // Files to cache (app shell)
 const STATIC_ASSETS = [
