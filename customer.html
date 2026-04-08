@@ -161,6 +161,9 @@
   }
   window.toggleTheme = () => applyTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
 
+  // ── STATE ──
+let currentUser = null, allProducts = [], cart = {}, currentCategory = 'all';
+
   // ── LANGUAGE ──
   const savedLang = localStorage.getItem('rd_lang') || 'en';
   applyLang(savedLang);
