@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light" data-lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Radhika Dairy – Admin</title>
+  <meta name="theme-color" content="#1a0808" id="themeColorMeta" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<div class="spinner-overlay show" id="spinner"><div class="spinner"></div><div class="spinner-text" id="spinnerText">Loading...</div></div>
+
+<!-- ═══ PRODUCT MODAL ═══ -->
+<div class="modal-overlay" id="productModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modalTitle">Add Product</h3>
+      <button class="drawer-close-modal" onclick="closeProductModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="editProductId" />
+      <div class="form-group"><label data-en="PRODUCT NAME" data-hi="उत्पाद नाम">PRODUCT NAME</label><input type="text" id="productName" placeholder="Full Cream Milk" /></div>
+      <div class="form-group"><label data-en="PRICE (₹)" data-hi="मूल्य (₹)">PRICE (₹)</label><input type="number" id="productPrice" placeholder="50" min="0" /></div>
+      <div class="form-group">
+        <label data-en="CATEGORY" data-hi="श्रेणी">CATEGORY</label>
+        <select id="productCategory">
+          <option value="milk">Milk / दूध</option>
+          <option value="curd">Curd / दही</option>
+          <option value="butter">Butter / मक्खन</option>
+          <option value="cheese">Cheese / चीज़</option>
+          <option value="paneer">Paneer / पनीर</option>
+          <option value="ghee">Ghee / घी</option>
+        </select>
+      </div>
+      <div class="form-group"><label data-en="IMAGE PATH" data-hi="इमेज पाथ">IMAGE PATH</label><input type="text" id="productImage" placeholder="/images/milk.png" /><div class="img-preview" id="imgPreview"><span>🖼️</span></div></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline btn-sm" onclick="closeProductModal()" data-en="Cancel" data-hi="रद्द करें">Cancel</button>
+      <button class="btn btn-primary btn-sm" onclick="saveProduct()" data-en="Save Product" data-hi="सेव करें">Save Product</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ ADD DELIVERY BOY MODAL ═══ -->
+<!--
+  ⚠️  BIG FIX: createUserWithEmailAndPassword logs out the currently signed-in admin.
+  Solution: we use a SECOND Firebase App instance ("secondaryApp") so the admin stays logged in.
+  The secondary app creates the delivery boy's auth account, then we sign it out immediately,
+  keeping the admin's session intact.
+-->
+<div class="modal-overlay" id="addDeliveryModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="deliveryModalTitle" data-en="Add Delivery Boy" data-hi="डिलीवरी बॉय जोड़ें">Add Delivery Boy</h3>
+      <button class="drawer-close-modal" onclick="closeDeliveryModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="background:var(--primary-light);border:1.5px solid var(--primary);border-radius:10px;padding:10px 12px;margin-bottom:14px;font-size:0.82rem;color:var(--primary);">
+        ℹ️ <span data-en="Creates a delivery login. Admin session stays active." data-hi="डिलीवरी लॉगिन बनाता है। एडमिन सेशन चालू रहेगा।">Creates a delivery login. Admin session stays active.</span>
+      </div>
+      <div class="form-group"><label data-en="FULL NAME" data-hi="पूरा नाम">FULL NAME</label><input type="text" id="dbName" data-plen="Delivery person's name" data-phi="डिलीवरी व्यक्ति का नाम" placeholder="Delivery person's name" /></div>
+      <div class="form-group"><label data-en="EMAIL" data-hi="ईमेल">EMAIL</label><input type="email" id="dbEmail" placeholder="delivery@radhika.com" /></div>
+      <div class="form-group"><label data-en="MOBILE NUMBER" data-hi="मोबाइल नंबर">MOBILE NUMBER</label><input type="tel" id="dbPhone" placeholder="+91XXXXXXXXXX" /></div>
+      <div class="form-group"><label data-en="PASSWORD" data-hi="पासवर्ड">PASSWORD</label><input type="password" id="dbPassword" data-plen="Min 6 characters" data-phi="कम से कम 6 अक्षर" placeholder="Min 6 characters" /></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline btn-sm" onclick="closeDeliveryModal()" data-en="Cancel" data-hi="रद्द करें">Cancel</button>
+      <button class="btn btn-primary btn-sm" onclick="addDeliveryBoy()" id="createDeliveryBtn" data-en="✅ Create Account" data-hi="✅ अकाउंट बनाएं">✅ Create Account</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ ADMIN LAYOUT ═══ -->
+<div class="admin-layout">
+
+  <!-- SIDEBAR -->
+  <aside class="admin-sidebar" id="adminSidebar">
+    <div class="sidebar-brand">
+      <span class="brand-icon">🥛</span>
+      <div>
+        <h2>Radhika Dairy</h2>
+        <p data-en="Admin Panel" data-hi="एडमिन पैनल">Admin Panel</p>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-nav-item active" data-page="dashboard" onclick="showAdminPage('dashboard')"><span class="nav-icon">📊</span> <span data-en="Dashboard" data-hi="डैशबोर्ड">Dashboard</span></div>
+      <div class="sidebar-nav-item" data-page="products" onclick="showAdminPage('products')"><span class="nav-icon">🛍️</span> <span data-en="Products" data-hi="उत्पाद">Products</span></div>
+      <div class="sidebar-nav-item" data-page="orders" onclick="showAdminPage('orders')"><span class="nav-icon">📦</span> <span data-en="Orders" data-hi="ऑर्डर">Orders</span></div>
+      <div class="sidebar-nav-item" data-page="users" onclick="showAdminPage('users')"><span class="nav-icon">👥</span> <span data-en="Users" data-hi="उपयोगकर्ता">Users</span></div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="sidebar-avatar">⚙️</div>
+        <div class="sidebar-user-info">
+          <p id="adminName">Admin</p>
+          <span data-en="Administrator" data-hi="व्यवस्थापक">Administrator</span>
+        </div>
+      </div>
+      <!-- Lang + Theme in sidebar -->
+      <div style="display:flex;gap:5px;margin-bottom:9px;">
+        <button class="util-btn active" id="sideEN" onclick="setLang('en')" style="flex:1;font-size:0.7rem;">EN</button>
+        <button class="util-btn" id="sideHI" onclick="setLang('hi')" style="flex:1;font-size:0.7rem;">हिं</button>
+        <button class="util-btn" id="sideTheme" onclick="toggleTheme()" style="flex:1;font-size:0.7rem;">🌙</button>
+      </div>
+      <button class="btn btn-danger btn-sm w-full" onclick="handleLogout()" id="logoutBtn" data-en="🚪 Logout" data-hi="🚪 लॉगआउट">🚪 Logout</button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="admin-main">
+    <div class="admin-topbar">
+      <div style="display:flex;align-items:center;gap:11px;">
+        <button class="hamburger" onclick="toggleSidebar()">☰</button>
+        <h2 id="adminPageTitle" data-en="Dashboard" data-hi="डैशबोर्ड">Dashboard</h2>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span class="badge badge-success">🟢 <span data-en="Live" data-hi="लाइव">Live</span></span>
+      </div>
+    </div>
+
+    <!-- ── DASHBOARD ── -->
+    <div class="admin-page active" id="page-dashboard">
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-num" id="stTotal">0</div><div class="stat-title" data-en="Total Orders" data-hi="कुल ऑर्डर">Total Orders</div></div>
+        <div class="stat-card orange"><div class="stat-num" id="stPending">0</div><div class="stat-title" data-en="Pending" data-hi="पेंडिंग">Pending</div></div>
+        <div class="stat-card"><div class="stat-num" id="stAssigned">0</div><div class="stat-title" data-en="Dispatched" data-hi="भेजे गए">Dispatched</div></div>
+        <div class="stat-card green"><div class="stat-num" id="stDelivered">0</div><div class="stat-title" data-en="Delivered" data-hi="डिलीवर">Delivered</div></div>
+        <div class="stat-card"><div class="stat-num" id="stProducts">0</div><div class="stat-title" data-en="Products" data-hi="उत्पाद">Products</div></div>
+        <div class="stat-card green"><div class="stat-num" id="stRevenue">₹0</div><div class="stat-title" data-en="Revenue" data-hi="राजस्व">Revenue</div></div>
+      </div>
+      <div class="table-wrap">
+        <div class="table-header"><h3 data-en="Recent Orders" data-hi="हाल के ऑर्डर">Recent Orders</h3><button class="btn btn-primary btn-sm" onclick="showAdminPage('orders')" data-en="View All →" data-hi="सब देखें →">View All →</button></div>
+        <div style="overflow-x:auto;"><table><thead><tr><th data-en="Order" data-hi="ऑर्डर">Order</th><th data-en="Customer" data-hi="ग्राहक">Customer</th><th data-en="Amount" data-hi="राशि">Amount</th><th data-en="Status" data-hi="स्थिति">Status</th><th data-en="Time" data-hi="समय">Time</th></tr></thead><tbody id="recentTable"><tr><td colspan="5" style="text-align:center;color:var(--text-light);">Loading...</td></tr></tbody></table></div>
+      </div>
+    </div>
+
+    <!-- ── PRODUCTS ── -->
+    <div class="admin-page" id="page-products">
+      <div class="table-wrap">
+        <div class="table-header"><h3 data-en="Products" data-hi="उत्पाद">Products</h3><button class="btn btn-primary btn-sm" onclick="openAddProduct()">+ <span data-en="Add Product" data-hi="उत्पाद जोड़ें">Add Product</span></button></div>
+        <div style="overflow-x:auto;"><table><thead><tr><th data-en="Image" data-hi="इमेज">Image</th><th data-en="Name" data-hi="नाम">Name</th><th data-en="Category" data-hi="श्रेणी">Category</th><th data-en="Price" data-hi="मूल्य">Price</th><th data-en="Actions" data-hi="कार्रवाई">Actions</th></tr></thead><tbody id="productsTable"><tr><td colspan="5" style="text-align:center;color:var(--text-light);">Loading...</td></tr></tbody></table></div>
+      </div>
+    </div>
+
+    <!-- ── ORDERS ── -->
+    <div class="admin-page" id="page-orders">
+      <div style="margin-bottom:13px;display:flex;gap:6px;flex-wrap:wrap;">
+        <button class="btn btn-primary btn-sm" onclick="filterAdminOrders('all')" id="fa-all" data-en="All" data-hi="सभी">All</button>
+        <button class="btn btn-outline btn-sm" onclick="filterAdminOrders('pending')" id="fa-pending" data-en="Pending" data-hi="पेंडिंग">Pending</button>
+        <button class="btn btn-outline btn-sm" onclick="filterAdminOrders('assigned')" id="fa-assigned" data-en="Assigned" data-hi="असाइन">Assigned</button>
+        <button class="btn btn-outline btn-sm" onclick="filterAdminOrders('delivered')" id="fa-delivered" data-en="Delivered" data-hi="डिलीवर">Delivered</button>
+      </div>
+      <div class="table-wrap">
+        <div class="table-header"><h3 data-en="All Orders" data-hi="सभी ऑर्डर">All Orders</h3><span class="badge badge-primary" id="orderCountBadge">0</span></div>
+        <div style="overflow-x:auto;"><table><thead><tr><th data-en="Order ID" data-hi="ऑर्डर ID">Order ID</th><th data-en="Customer" data-hi="ग्राहक">Customer</th><th class="hide-mobile" data-en="Phone" data-hi="फ़ोन">Phone</th><th class="hide-mobile" data-en="Items" data-hi="आइटम">Items</th><th data-en="Total" data-hi="कुल">Total</th><th data-en="Status" data-hi="स्थिति">Status</th><th data-en="Assign" data-hi="असाइन">Assign</th><th data-en="Action" data-hi="कार्रवाई">Action</th></tr></thead><tbody id="ordersTable"><tr><td colspan="8" style="text-align:center;color:var(--text-light);">Loading...</td></tr></tbody></table></div>
+      </div>
+    </div>
+
+    <!-- ── USERS ── -->
+    <div class="admin-page" id="page-users">
+      <div style="margin-bottom:13px;display:flex;justify-content:flex-end;">
+        <button class="btn btn-primary btn-sm" onclick="openAddDelivery()">+ <span data-en="Add Delivery Boy" data-hi="डिलीवरी बॉय जोड़ें">Add Delivery Boy</span></button>
+      </div>
+      <div class="table-wrap">
+        <div class="table-header"><h3 data-en="All Users" data-hi="सभी उपयोगकर्ता">All Users</h3></div>
+        <div style="overflow-x:auto;"><table><thead><tr><th data-en="Name" data-hi="नाम">Name</th><th data-en="Email" data-hi="ईमेल">Email</th><th data-en="Phone" data-hi="फ़ोन">Phone</th><th data-en="Role" data-hi="रोल">Role</th></tr></thead><tbody id="usersTable"><tr><td colspan="4" style="text-align:center;color:var(--text-light);">Loading...</td></tr></tbody></table></div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<div id="toast-container" class="admin-toast"></div>
+
+<script type="module">
+  // ════════════════════════════════════════════════
+  // FIREBASE IMPORTS
+  // ════════════════════════════════════════════════
+  import { auth, db } from './firebase-config.js';
+  import { getApp, initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import {
+    onAuthStateChanged, signOut,
+    getAuth, createUserWithEmailAndPassword, signOut as fbSignOut
+  } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+  import {
+    collection, doc, getDoc, getDocs, setDoc, addDoc,
+    updateDoc, deleteDoc, onSnapshot, orderBy, query, where
+  } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+  // ════════════════════════════════════════════════
+  // SECONDARY FIREBASE APP — for creating delivery boys
+  // Without this, createUserWithEmailAndPassword logs OUT the admin!
+  // We create a secondary app instance, use it to register the new user,
+  // then immediately sign out of that secondary instance.
+  // ════════════════════════════════════════════════
+  let secondaryApp = null;
+  function getSecondaryApp() {
+    if (secondaryApp) return secondaryApp;
+    try {
+      secondaryApp = getApp('secondary');
+    } catch {
+      // Import the config values from the main app
+      const mainApp = getApp();
+      secondaryApp = initializeApp(mainApp.options, 'secondary');
+    }
+    return secondaryApp;
+  }
+
+  // ── THEME ──
+  const st = localStorage.getItem('rd_theme') || 'light';
+  applyTheme(st);
+  function applyTheme(t) {
+    document.documentElement.setAttribute('data-theme', t);
+    document.getElementById('themeColorMeta').content = t === 'dark' ? '#0d0404' : '#1a0808';
+    const icon = t === 'dark' ? '☀️' : '🌙';
+    document.getElementById('sideTheme').textContent = icon;
+    localStorage.setItem('rd_theme', t);
+  }
+  window.toggleTheme = () => applyTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+
+  // ── LANGUAGE ──
+  const sl = localStorage.getItem('rd_lang') || 'en';
+  applyLang(sl);
+  function applyLang(lang) {
+    localStorage.setItem('rd_lang', lang);
+    document.getElementById('sideEN').classList.toggle('active', lang === 'en');
+    document.getElementById('sideHI').classList.toggle('active', lang === 'hi');
+    document.querySelectorAll('[data-en]').forEach(el => { el.textContent = lang === 'hi' ? (el.dataset.hi||el.dataset.en) : el.dataset.en; });
+    document.querySelectorAll('[data-plen]').forEach(el => { el.placeholder = lang === 'hi' ? (el.dataset.phi||el.dataset.plen) : el.dataset.plen; });
+    document.getElementById('spinnerText').textContent = lang === 'hi' ? 'लोड हो रहा है...' : 'Loading...';
+  }
+  window.setLang = (lang) => applyLang(lang);
+  function L(en, hi) { return localStorage.getItem('rd_lang') === 'hi' ? hi : en; }
+
+  let currentAdmin = null, allOrders = [], allProducts = [], allDeliveryBoys = [], adminFilter = 'all';
+
+  // ── AUTH ──
+  onAuthStateChanged(auth, async (user) => {
+    if (!user) { window.location.href = 'login.html'; return; }
+    const d = await getDoc(doc(db, 'users', user.uid));
+    if (!d.exists() || d.data().role !== 'admin') { await signOut(auth); window.location.href = 'login.html'; return; }
+    currentAdmin = { uid: user.uid, ...d.data() };
+    document.getElementById('adminName').textContent = currentAdmin.name;
+    document.getElementById('spinner').classList.remove('show');
+    loadProducts(); loadOrders(); loadUsers();
+  });
+
+  // ── PAGE NAV ──
+  window.showAdminPage = (page) => {
+    document.querySelectorAll('.admin-page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.sidebar-nav-item').forEach(i => i.classList.remove('active'));
+    document.getElementById(`page-${page}`).classList.add('active');
+    document.querySelector(`[data-page="${page}"]`).classList.add('active');
+    const lang = localStorage.getItem('rd_lang');
+    const titles = { dashboard:L('Dashboard','डैशबोर्ड'), products:L('Products','उत्पाद'), orders:L('Orders','ऑर्डर'), users:L('Users','उपयोगकर्ता') };
+    document.getElementById('adminPageTitle').textContent = titles[page];
+    if (window.innerWidth <= 768) document.getElementById('adminSidebar').classList.remove('open');
+  };
+  window.toggleSidebar = () => document.getElementById('adminSidebar').classList.toggle('open');
+
+  // ── PRODUCTS ──
+  function loadProducts() {
+    onSnapshot(collection(db,'products'), snap => {
+      allProducts = snap.docs.map(d => ({ id:d.id,...d.data() }));
+      renderProductsTable(); updateStats();
+    });
+  }
+  const emojiMap = {milk:'🥛',curd:'🫙',butter:'🧈',cheese:'🧀',paneer:'🍱',ghee:'✨',default:'🛍️'};
+
+  function renderProductsTable() {
+    const tbody = document.getElementById('productsTable');
+    if (!allProducts.length) { tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--text-light);">${L('No products','कोई उत्पाद नहीं')}</td></tr>`; return; }
+    tbody.innerHTML = allProducts.map(p => `<tr>
+      <td><div style="width:38px;height:38px;border-radius:7px;background:var(--primary-light);display:flex;align-items:center;justify-content:center;overflow:hidden;">
+        <img src="${p.image||''}" style="width:100%;height:100%;object-fit:cover;display:${p.image?'block':'none'};" onerror="this.style.display='none';this.nextElementSibling.style.display='block';"/>
+        <span style="display:${p.image?'none':'block'};font-size:1.2rem;">${emojiMap[p.category]||emojiMap.default}</span>
+      </div></td>
+      <td><strong>${p.name}</strong></td>
+      <td><span class="badge badge-primary">${p.category}</span></td>
+      <td><strong>₹${p.price}</strong></td>
+      <td><div class="actions-cell">
+        <button class="btn btn-outline btn-sm" onclick="editProduct('${p.id}')">✏️ ${L('Edit','संपादित')}</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteProduct('${p.id}','${p.name}')">🗑️</button>
+      </div></td>
+    </tr>`).join('');
+  }
+
+  window.openAddProduct = () => {
+    document.getElementById('editProductId').value = '';
+    ['productName','productPrice','productImage'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('productCategory').value = 'milk';
+    document.getElementById('imgPreview').innerHTML = '<span>🖼️</span>';
+    document.getElementById('modalTitle').textContent = L('Add Product','उत्पाद जोड़ें');
+    document.getElementById('productModal').classList.add('show');
+  };
+  window.closeProductModal = () => document.getElementById('productModal').classList.remove('show');
+  window.editProduct = (id) => {
+    const p = allProducts.find(x => x.id===id); if (!p) return;
+    document.getElementById('editProductId').value = p.id;
+    document.getElementById('productName').value = p.name;
+    document.getElementById('productPrice').value = p.price;
+    document.getElementById('productCategory').value = p.category;
+    document.getElementById('productImage').value = p.image||'';
+    updateImgPreview(p.image, p.category);
+    document.getElementById('modalTitle').textContent = L('Edit Product','उत्पाद संपादित करें');
+    document.getElementById('productModal').classList.add('show');
+  };
+  document.getElementById('productImage').addEventListener('input', e => updateImgPreview(e.target.value, document.getElementById('productCategory').value));
+  function updateImgPreview(src, cat) {
+    const el = document.getElementById('imgPreview');
+    el.innerHTML = src ? `<img src="${src}" style="width:100%;height:100%;object-fit:cover;" onerror="this.parentElement.innerHTML='<span>${emojiMap[cat]||emojiMap.default}</span>';" />` : `<span>${emojiMap[cat]||emojiMap.default}</span>`;
+  }
+  window.saveProduct = async () => {
+    const id = document.getElementById('editProductId').value;
+    const name = document.getElementById('productName').value.trim();
+    const price = parseFloat(document.getElementById('productPrice').value);
+    const category = document.getElementById('productCategory').value;
+    const image = document.getElementById('productImage').value.trim();
+    if (!name || isNaN(price)) { toast(L('Fill all fields','सभी फ़ील्ड भरें'), 'error'); return; }
+    showSpinner();
+    try {
+      const data = { name, price, category, image };
+      if (id) { await updateDoc(doc(db,'products',id), data); toast(L('Product updated!','उत्पाद अपडेट हुआ!'), 'success'); }
+      else { await addDoc(collection(db,'products'), data); toast(L('Product added!','उत्पाद जोड़ा गया!'), 'success'); }
+      closeProductModal();
+    } catch(e) { toast(e.message, 'error'); }
+    hideSpinner();
+  };
+  window.deleteProduct = async (id, name) => {
+    if (!confirm(L(`Delete "${name}"?`,`"${name}" हटाएं?`))) return;
+    showSpinner();
+    try { await deleteDoc(doc(db,'products',id)); toast(L('Deleted','हटाया गया'), 'success'); }
+    catch(e) { toast(e.message, 'error'); }
+    hideSpinner();
+  };
+
+  // ── ORDERS ──
+  function loadOrders() {
+    onSnapshot(query(collection(db,'orders'), orderBy('timestamp','desc')), snap => {
+      allOrders = snap.docs.map(d => ({ id:d.id,...d.data() }));
+      renderOrdersTable(); updateStats();
+    });
+  }
+  window.filterAdminOrders = (mode) => {
+    adminFilter = mode;
+    ['all','pending','assigned','delivered'].forEach(m => {
+      document.getElementById(`fa-${m}`).className = m===mode ? 'btn btn-primary btn-sm' : 'btn btn-outline btn-sm';
+    });
+    renderOrdersTable();
+  };
+  function renderOrdersTable() {
+    const tbody = document.getElementById('ordersTable');
+    const filtered = adminFilter==='all' ? allOrders : allOrders.filter(o => o.status===adminFilter);
+    document.getElementById('orderCountBadge').textContent = filtered.length + ' ' + L('orders','ऑर्डर');
+    if (!filtered.length) { tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:var(--text-light);padding:22px;">${L('No orders','कोई ऑर्डर नहीं')}</td></tr>`; return; }
+    tbody.innerHTML = filtered.map(o => {
+      const date = o.timestamp?.toDate ? o.timestamp.toDate().toLocaleString('en-IN') : '-';
+      const opts = allDeliveryBoys.map(db => `<option value="${db.id}" ${o.deliveryBoyId===db.id?'selected':''}>${db.name}</option>`).join('');
+      return `<tr>
+        <td><strong>#${o.id.slice(-6).toUpperCase()}</strong><br><span style="font-size:0.7rem;color:var(--text-light);">${date}</span></td>
+        <td>${o.customerName||'-'}<br><span style="font-size:0.72rem;color:var(--text-light);">${(o.address||'').substring(0,25)}${(o.address||'').length>25?'...':''}</span></td>
+        <td class="hide-mobile">${o.customerPhone||'-'}</td>
+        <td class="hide-mobile">${(o.items||[]).map(i=>`${i.name}×${i.quantity}`).join('<br>')}</td>
+        <td><strong>₹${o.totalPrice}</strong></td>
+        <td><span class="status-badge status-${o.status}">${o.status}</span></td>
+        <td><select class="select-styled" style="min-width:120px;" onchange="assignDelivery('${o.id}',this.value)">
+          <option value="">${L('Unassigned','बिना असाइन')}</option>${opts}
+        </select></td>
+        <td><div class="actions-cell">
+          ${o.status==='pending' ? `<button class="btn btn-sm" style="background:#e3f2fd;color:#1565c0;" onclick="changeStatus('${o.id}','assigned')">${L('Assign','असाइन')}</button>` : ''}
+          ${o.status==='assigned' ? `<button class="btn btn-success btn-sm" onclick="changeStatus('${o.id}','delivered')">${L('Deliver','डिलीवर')}</button>` : ''}
+          ${o.status==='delivered' ? `<span style="color:var(--accent);font-size:0.8rem;font-weight:700;">✅</span>` : ''}
+        </div></td>
+      </tr>`;
+    }).join('');
+  }
+  window.assignDelivery = async (orderId, dbId) => {
+    try {
+      await updateDoc(doc(db,'orders',orderId), { deliveryBoyId: dbId||null, status: dbId?'assigned':'pending' });
+      toast(dbId ? L('Assigned!','असाइन किया!') : L('Removed','हटाया'), 'success');
+    } catch(e) { toast(e.message, 'error'); }
+  };
+  window.changeStatus = async (orderId, status) => {
+    try { await updateDoc(doc(db,'orders',orderId), { status }); toast(L(`Status → ${status}`,`स्थिति → ${status}`), 'success'); }
+    catch(e) { toast(e.message, 'error'); }
+  };
+
+  // ── USERS ──
+  function loadUsers() {
+    onSnapshot(collection(db,'users'), snap => {
+      const users = snap.docs.map(d => ({ id:d.id,...d.data() }));
+      allDeliveryBoys = users.filter(u => u.role==='delivery');
+      renderUsersTable(users);
+      renderOrdersTable();
+    });
+  }
+  function renderUsersTable(users) {
+    const tbody = document.getElementById('usersTable');
+    if (!users.length) { tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;">${L('No users','कोई उपयोगकर्ता नहीं')}</td></tr>`; return; }
+    const rc = {admin:'#7b1fa2',delivery:'#1565c0',customer:'#2e7d32'};
+    const re = {admin:'⚙️',delivery:'🚴',customer:'🛒'};
+    tbody.innerHTML = users.map(u => `<tr>
+      <td><div style="display:flex;align-items:center;gap:8px;">
+        <div style="width:30px;height:30px;border-radius:50%;background:var(--primary-light);display:flex;align-items:center;justify-content:center;">${re[u.role]||'👤'}</div>
+        <strong>${u.name||'-'}</strong>
+      </div></td>
+      <td>${u.email||'-'}</td>
+      <td>${u.phone||'-'}</td>
+      <td><span class="badge" style="background:${rc[u.role]}22;color:${rc[u.role]};">${u.role}</span></td>
+    </tr>`).join('');
+  }
+
+  // ── STATS ──
+  function updateStats() {
+    document.getElementById('stTotal').textContent = allOrders.length;
+    document.getElementById('stPending').textContent = allOrders.filter(o=>o.status==='pending').length;
+    document.getElementById('stAssigned').textContent = allOrders.filter(o=>o.status==='assigned').length;
+    document.getElementById('stDelivered').textContent = allOrders.filter(o=>o.status==='delivered').length;
+    document.getElementById('stProducts').textContent = allProducts.length;
+    const rev = allOrders.filter(o=>o.status==='delivered').reduce((s,o)=>s+(o.totalPrice||0),0);
+    document.getElementById('stRevenue').textContent = `₹${rev}`;
+    // Recent table
+    const recent = allOrders.slice(0,5);
+    document.getElementById('recentTable').innerHTML = recent.length ? recent.map(o => {
+      const date = o.timestamp?.toDate ? o.timestamp.toDate().toLocaleString('en-IN') : '-';
+      return `<tr><td>#${o.id.slice(-6).toUpperCase()}</td><td>${o.customerName||'-'}</td><td>₹${o.totalPrice}</td><td><span class="status-badge status-${o.status}">${o.status}</span></td><td>${date}</td></tr>`;
+    }).join('') : `<tr><td colspan="5" style="text-align:center;color:var(--text-light);">${L('No orders yet','अभी कोई ऑर्डर नहीं')}</td></tr>`;
+  }
+
+  // ════════════════════════════════════════════════
+  // ADD DELIVERY BOY — FIXED VERSION
+  // Uses secondary Firebase app so admin stays logged in
+  // ════════════════════════════════════════════════
+  window.openAddDelivery = () => {
+    ['dbName','dbEmail','dbPhone','dbPassword'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('addDeliveryModal').classList.add('show');
+  };
+  window.closeDeliveryModal = () => document.getElementById('addDeliveryModal').classList.remove('show');
+
+  window.addDeliveryBoy = async () => {
+    const name = document.getElementById('dbName').value.trim();
+    const email = document.getElementById('dbEmail').value.trim();
+    const phone = document.getElementById('dbPhone').value.trim();
+    const password = document.getElementById('dbPassword').value;
+
+    if (!name||!email||!password) { toast(L('Fill all required fields','सभी ज़रूरी फ़ील्ड भरें'), 'error'); return; }
+    if (password.length < 6) { toast(L('Password min 6 chars','पासवर्ड कम से कम 6 अक्षर'), 'error'); return; }
+
+    showSpinner();
+    document.getElementById('createDeliveryBtn').disabled = true;
+
+    try {
+      // ── KEY FIX: Use secondary app to avoid logging out the admin ──
+      const secondApp = getSecondaryApp();
+      const secondAuth = getAuth(secondApp);
+
+      // Create auth account in secondary app
+      const { user } = await createUserWithEmailAndPassword(secondAuth, email, password);
+
+      // Save user data to Firestore (using main db - no auth required for write here)
+      await setDoc(doc(db, 'users', user.uid), {
+        id: user.uid,
+        name, email,
+        phone: phone || '',
+        role: 'delivery',
+        createdAt: new Date()
+      });
+
+      // Sign out of the SECONDARY app only (admin session unaffected)
+      await fbSignOut(secondAuth);
+
+      closeDeliveryModal();
+      hideSpinner();
+      document.getElementById('createDeliveryBtn').disabled = false;
+      toast(L(`✅ Delivery boy "${name}" created!`,`✅ "${name}" बन गया!`), 'success');
+
+    } catch(err) {
+      hideSpinner();
+      document.getElementById('createDeliveryBtn').disabled = false;
+      const msg = err.code === 'auth/email-already-in-use'
+        ? L('Email already registered','यह ईमेल पहले से है')
+        : err.message;
+      toast(msg, 'error');
+    }
+  };
+
+  // ── LOGOUT ──
+  window.handleLogout = async () => { await signOut(auth); window.location.href = 'login.html'; };
+
+  // ── TOAST & SPINNER ──
+  window.toast = (msg, type='info') => {
+    const c = document.getElementById('toast-container');
+    const el = document.createElement('div');
+    el.className = `toast ${type}`;
+    el.innerHTML = `<span>${{success:'✅',error:'❌',info:'ℹ️'}[type]||''}</span> ${msg}`;
+    c.appendChild(el);
+    setTimeout(() => { el.style.animation='toastOut .3s ease forwards'; setTimeout(()=>el.remove(),300); }, 3000);
+  };
+  window.showSpinner = () => document.getElementById('spinner').classList.add('show');
+  window.hideSpinner = () => document.getElementById('spinner').classList.remove('show');
+</script>
+</body>
+</html>

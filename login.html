@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light" data-lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Radhika Dairy – Login</title>
+  <meta name="theme-color" content="#c62828" id="themeColorMeta" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --primary: #c62828; --primary-dark: #8e0000; --primary-light: #ffebee;
+      --accent: #2e7d32; --white: #fff; --bg: #fff8f8; --card: #ffffff;
+      --text: #1a1a1a; --text-mid: #555; --text-light: #999;
+      --border: #ffe0e0; --shadow: 0 4px 24px rgba(198,40,40,0.12);
+      --radius: 16px; --font: 'Nunito',sans-serif; --font-h: 'Poppins',sans-serif;
+    }
+    [data-theme="dark"] {
+      --primary: #ef5350; --primary-dark: #c62828; --primary-light: #3d1414;
+      --bg: #150808; --card: #240f0f; --text: #f5f0f0; --text-mid: #ccc;
+      --text-light: #888; --border: #4a2020; --shadow: 0 4px 24px rgba(0,0,0,0.5);
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;transition:background .3s,color .3s;}
+
+    .util-bar{position:fixed;top:0;left:0;right:0;height:48px;display:flex;align-items:center;justify-content:space-between;padding:0 14px;z-index:100;background:var(--bg);border-bottom:1px solid var(--border);}
+    .util-left{display:flex;gap:6px;}
+    .util-btn{padding:5px 12px;border-radius:20px;font-size:0.75rem;font-weight:700;border:1.5px solid var(--border);background:var(--card);color:var(--text-mid);cursor:pointer;transition:all .2s;font-family:var(--font);}
+    .util-btn:hover{border-color:var(--primary);color:var(--primary);}
+    .util-btn.active{background:var(--primary);color:#fff;border-color:var(--primary);}
+    .staff-btns{display:flex;gap:6px;align-items:center;}
+    .staff-btn{padding:5px 10px;border-radius:20px;font-size:0.72rem;font-weight:700;border:1.5px solid var(--border);background:transparent;color:var(--text-light);cursor:pointer;transition:all .2s;font-family:var(--font);}
+    .staff-btn:hover{background:var(--primary-light);color:var(--primary);border-color:var(--primary);}
+
+    .login-page{min-height:100vh;display:flex;flex-direction:column;padding-top:48px;}
+
+    .login-hero{background:linear-gradient(160deg,var(--primary) 0%,var(--primary-dark) 100%);padding:36px 24px 56px;text-align:center;color:#fff;position:relative;overflow:hidden;}
+    .login-hero::after{content:'';position:absolute;bottom:-30px;left:0;right:0;height:60px;background:var(--bg);border-radius:50% 50% 0 0/60px 60px 0 0;}
+    .logo-circle{width:78px;height:78px;border-radius:50%;background:rgba(255,255,255,0.15);border:2.5px solid rgba(255,255,255,0.35);display:flex;align-items:center;justify-content:center;font-size:36px;margin:0 auto 14px;backdrop-filter:blur(8px);}
+    .login-hero h1{font-family:var(--font-h);font-size:2rem;font-weight:800;letter-spacing:-0.5px;margin-bottom:4px;}
+    .hero-tagline{font-size:0.88rem;opacity:0.82;}
+    .hero-badge{display:inline-block;background:rgba(255,255,255,0.2);padding:3px 10px;border-radius:20px;font-size:0.72rem;font-weight:700;margin-bottom:10px;}
+
+    .customer-card{background:var(--card);border-radius:var(--radius);padding:22px 18px;margin:28px 14px 14px;box-shadow:var(--shadow);}
+    .card-title{font-family:var(--font-h);font-size:1.05rem;font-weight:700;margin-bottom:16px;color:var(--text);}
+
+    .auth-tabs{display:flex;background:var(--bg);border-radius:10px;padding:4px;margin-bottom:18px;gap:4px;}
+    .auth-tab{flex:1;padding:9px;border-radius:8px;font-size:0.88rem;font-weight:700;background:transparent;color:var(--text-light);cursor:pointer;transition:all .2s;font-family:var(--font);}
+    .auth-tab.active{background:var(--primary);color:#fff;}
+
+    .form-group{margin-bottom:13px;}
+    .form-group label{display:block;font-size:0.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--text-mid);margin-bottom:5px;}
+    .form-group input,.form-group select{width:100%;padding:11px 14px;border:2px solid var(--border);border-radius:10px;font-size:0.93rem;color:var(--text);background:var(--bg);font-family:var(--font);transition:all .2s;}
+    .form-group input:focus,.form-group select:focus{border-color:var(--primary);outline:none;box-shadow:0 0 0 3px var(--primary-light);}
+
+    .phone-row{display:flex;gap:8px;}
+    .phone-code{width:76px;flex-shrink:0;padding:11px 10px;border:2px solid var(--border);border-radius:10px;font-size:0.9rem;background:var(--bg);color:var(--text);font-family:var(--font);}
+    .phone-code:focus{border-color:var(--primary);outline:none;}
+
+    .btn-primary{width:100%;padding:13px;background:var(--primary);color:#fff;border:none;border-radius:10px;font-size:1rem;font-weight:800;cursor:pointer;font-family:var(--font);transition:all .2s;margin-top:4px;}
+    .btn-primary:hover{background:var(--primary-dark);transform:translateY(-1px);}
+
+    /* Staff modal */
+    .staff-modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:300;display:none;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(4px);}
+    .staff-modal-bg.show{display:flex;}
+    .staff-modal{background:var(--card);border-radius:20px;padding:22px 20px;width:100%;max-width:350px;box-shadow:0 20px 60px rgba(0,0,0,0.35);animation:modalIn .3s ease;}
+    @keyframes modalIn{from{transform:translateY(14px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+    .modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+    .modal-head h3{font-size:1.05rem;font-family:var(--font-h);}
+    .close-btn{width:30px;height:30px;border-radius:50%;background:var(--bg);border:none;cursor:pointer;font-size:1rem;color:var(--text-mid);display:flex;align-items:center;justify-content:center;}
+    .role-tabs{display:flex;gap:6px;margin-bottom:14px;}
+    .role-tab{flex:1;padding:8px 6px;border-radius:8px;font-size:0.8rem;font-weight:700;border:2px solid var(--border);background:transparent;color:var(--text-mid);cursor:pointer;text-align:center;transition:all .2s;font-family:var(--font);}
+    .role-tab.active{background:var(--primary);color:#fff;border-color:var(--primary);}
+
+    #toast-container{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:999;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none;}
+    .toast{background:#1a1a1a;color:#fff;padding:10px 18px;border-radius:20px;font-size:0.85rem;font-weight:600;box-shadow:0 4px 20px rgba(0,0,0,0.2);display:flex;align-items:center;gap:8px;max-width:320px;text-align:center;animation:toastIn .3s ease;}
+    .toast.success{background:#2e7d32;}.toast.error{background:#c62828;}.toast.info{background:#1565c0;}
+    @keyframes toastIn{from{transform:translateY(8px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+    @keyframes toastOut{to{transform:translateY(8px);opacity:0;}}
+
+    .spinner-overlay{position:fixed;inset:0;background:rgba(255,255,255,0.85);z-index:998;display:none;align-items:center;justify-content:center;flex-direction:column;gap:12px;backdrop-filter:blur(4px);}
+    [data-theme="dark"] .spinner-overlay{background:rgba(0,0,0,0.7);}
+    .spinner-overlay.show{display:flex;}
+    .spinner{width:44px;height:44px;border:4px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin .8s linear infinite;}
+    @keyframes spin{to{transform:rotate(360deg);}}
+    .spinner-text{font-size:0.88rem;font-weight:600;color:var(--text-mid);}
+    .footer-note{text-align:center;padding:16px;color:var(--text-light);font-size:0.75rem;}
+  </style>
+</head>
+<body>
+
+<div class="spinner-overlay" id="spinner"><div class="spinner"></div><div class="spinner-text" id="spinnerText">Please wait...</div></div>
+
+<!-- Staff Login Modal -->
+<div class="staff-modal-bg" id="staffModal">
+  <div class="staff-modal">
+    <div class="modal-head">
+      <h3 id="staffModalTitle">⚙️ Staff Login</h3>
+      <button class="close-btn" onclick="closeStaffModal()">✕</button>
+    </div>
+    <div class="role-tabs">
+      <button class="role-tab active" id="roleTabAdmin" onclick="setStaffRole('admin')">⚙️ <span data-en="Admin" data-hi="एडमिन">Admin</span></button>
+      <button class="role-tab" id="roleTabDelivery" onclick="setStaffRole('delivery')">🚴 <span data-en="Delivery" data-hi="डिलीवरी">Delivery</span></button>
+    </div>
+    <div class="form-group">
+      <label data-en="EMAIL" data-hi="ईमेल">EMAIL</label>
+      <input type="email" id="staffEmail" placeholder="staff@dairy.com" />
+    </div>
+    <div class="form-group">
+      <label data-en="PASSWORD" data-hi="पासवर्ड">PASSWORD</label>
+      <input type="password" id="staffPassword" placeholder="Password" />
+    </div>
+    <button class="btn-primary" id="staffLoginBtn" onclick="handleStaffLogin()">🔐 Login as Admin</button>
+  </div>
+</div>
+
+<!-- Utility Bar -->
+<div class="util-bar">
+  <div class="util-left">
+    <button class="util-btn active" id="btnEN" onclick="setLang('en')">EN</button>
+    <button class="util-btn" id="btnHI" onclick="setLang('hi')">हिं</button>
+  </div>
+  <div class="staff-btns">
+    <button class="staff-btn" onclick="openStaffModal('admin')">⚙️ <span data-en="Admin" data-hi="एडमिन">Admin</span></button>
+    <button class="staff-btn" onclick="openStaffModal('delivery')">🚴 <span data-en="Delivery" data-hi="डिलीवरी">Delivery</span></button>
+    <button class="util-btn" id="btnTheme" onclick="toggleTheme()">🌙</button>
+  </div>
+</div>
+
+<div class="login-page">
+  <div class="login-hero">
+    <div class="logo-circle">🥛</div>
+    <div class="hero-badge">🌟 <span data-en="FRESH DAILY" data-hi="रोज़ ताज़ा">FRESH DAILY</span></div>
+    <h1>Radhika Dairy</h1>
+    <p class="hero-tagline" data-en="Pure milk & dairy, delivered to your door" data-hi="शुद्ध दूध और डेयरी, आपके घर तक">Pure milk & dairy, delivered to your door</p>
+  </div>
+
+  <div class="customer-card">
+    <p class="card-title" data-en="🛒 Customer Login / Sign Up" data-hi="🛒 ग्राहक लॉगिन / रजिस्टर">🛒 Customer Login / Sign Up</p>
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tabLogin" onclick="switchTab('login')" data-en="Login" data-hi="लॉगिन">Login</button>
+      <button class="auth-tab" id="tabSignup" onclick="switchTab('signup')" data-en="Sign Up" data-hi="रजिस्टर">Sign Up</button>
+    </div>
+
+    <!-- Login Form -->
+    <div id="loginForm">
+      <div class="form-group">
+        <label data-en="EMAIL" data-hi="ईमेल">EMAIL</label>
+        <input type="email" id="loginEmail" data-plen="you@email.com" data-phi="आपका ईमेल" placeholder="you@email.com" />
+      </div>
+      <div class="form-group">
+        <label data-en="PASSWORD" data-hi="पासवर्ड">PASSWORD</label>
+        <input type="password" id="loginPassword" data-plen="Your password" data-phi="आपका पासवर्ड" placeholder="Your password" />
+      </div>
+      <button class="btn-primary" onclick="handleLogin()" id="loginBtn" data-en="🔐 Login" data-hi="🔐 लॉगिन">🔐 Login</button>
+    </div>
+
+    <!-- Signup Form -->
+    <div id="signupForm" style="display:none;">
+      <div class="form-group">
+        <label data-en="FULL NAME" data-hi="पूरा नाम">FULL NAME</label>
+        <input type="text" id="signupName" data-plen="Your full name" data-phi="आपका पूरा नाम" placeholder="Your full name" />
+      </div>
+      <div class="form-group">
+        <label data-en="EMAIL" data-hi="ईमेल">EMAIL</label>
+        <input type="email" id="signupEmail" data-plen="you@email.com" data-phi="आपका ईमेल" placeholder="you@email.com" />
+      </div>
+      <div class="form-group">
+        <label data-en="MOBILE NUMBER" data-hi="मोबाइल नंबर">MOBILE NUMBER</label>
+        <div class="phone-row">
+          <input type="tel" class="phone-code" value="+91" id="phoneCode" maxlength="4" />
+          <input type="tel" id="signupPhone" data-plen="10-digit number" data-phi="10 अंकों का नंबर" placeholder="10-digit number" maxlength="10" style="flex:1;" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label data-en="PASSWORD" data-hi="पासवर्ड">PASSWORD</label>
+        <input type="password" id="signupPassword" data-plen="Min 6 characters" data-phi="कम से कम 6 अक्षर" placeholder="Min 6 characters" />
+      </div>
+      <button class="btn-primary" onclick="handleSignup()" id="signupBtn" data-en="✨ Create Account" data-hi="✨ अकाउंट बनाएं">✨ Create Account</button>
+    </div>
+  </div>
+  <div class="footer-note" data-en="Radhika Dairy © 2024 • Fresh & Pure" data-hi="राधिका डेयरी © 2024 • शुद्ध और ताज़ा">Radhika Dairy © 2024 • Fresh & Pure</div>
+</div>
+
+<div id="toast-container"></div>
+
+<script type="module">
+  import { auth, db } from './firebase-config.js';
+  import { signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+  import { doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+  // ─── THEME ───
+  const savedTheme = localStorage.getItem('rd_theme') || 'light';
+  applyTheme(savedTheme);
+  function applyTheme(t) {
+    document.documentElement.setAttribute('data-theme', t);
+    document.getElementById('themeColorMeta').content = t === 'dark' ? '#8e0000' : '#c62828';
+    document.getElementById('btnTheme').textContent = t === 'dark' ? '☀️' : '🌙';
+    localStorage.setItem('rd_theme', t);
+  }
+  window.toggleTheme = () => applyTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+
+  // ─── LANGUAGE ───
+  const savedLang = localStorage.getItem('rd_lang') || 'en';
+  applyLang(savedLang);
+  function applyLang(lang) {
+    localStorage.setItem('rd_lang', lang);
+    document.getElementById('btnEN').classList.toggle('active', lang === 'en');
+    document.getElementById('btnHI').classList.toggle('active', lang === 'hi');
+    document.querySelectorAll('[data-en]').forEach(el => { el.textContent = lang === 'hi' ? (el.dataset.hi || el.dataset.en) : el.dataset.en; });
+    document.querySelectorAll('[data-plen]').forEach(el => { el.placeholder = lang === 'hi' ? (el.dataset.phi || el.dataset.plen) : el.dataset.plen; });
+    document.getElementById('spinnerText').textContent = lang === 'hi' ? 'कृपया प्रतीक्षा करें...' : 'Please wait...';
+  }
+  window.setLang = (lang) => applyLang(lang);
+  function t(en, hi) { return localStorage.getItem('rd_lang') === 'hi' ? hi : en; }
+
+  // ─── TAB SWITCH ───
+  window.switchTab = (tab) => {
+    const isL = tab === 'login';
+    document.getElementById('loginForm').style.display = isL ? 'block' : 'none';
+    document.getElementById('signupForm').style.display = isL ? 'none' : 'block';
+    document.getElementById('tabLogin').classList.toggle('active', isL);
+    document.getElementById('tabSignup').classList.toggle('active', !isL);
+  };
+
+  // ─── STAFF MODAL ───
+  let staffRole = 'admin';
+  window.openStaffModal = (role) => {
+    staffRole = role;
+    setStaffRole(role);
+    document.getElementById('staffModal').classList.add('show');
+    document.getElementById('staffEmail').value = '';
+    document.getElementById('staffPassword').value = '';
+  };
+  window.closeStaffModal = () => document.getElementById('staffModal').classList.remove('show');
+  window.setStaffRole = (role) => {
+    staffRole = role;
+    document.getElementById('roleTabAdmin').classList.toggle('active', role === 'admin');
+    document.getElementById('roleTabDelivery').classList.toggle('active', role === 'delivery');
+    document.getElementById('staffModalTitle').textContent = role === 'admin' ? t('⚙️ Admin Login','⚙️ एडमिन लॉगिन') : t('🚴 Delivery Login','🚴 डिलीवरी लॉगिन');
+    document.getElementById('staffLoginBtn').textContent = role === 'admin' ? t('🔐 Login as Admin','🔐 एडमिन लॉगिन') : t('🔐 Login as Delivery','🔐 डिलीवरी लॉगिन');
+  };
+
+  window.handleStaffLogin = async () => {
+    const email = document.getElementById('staffEmail').value.trim();
+    const password = document.getElementById('staffPassword').value;
+    if (!email || !password) { toast(t('Fill all fields','सभी फ़ील्ड भरें'), 'error'); return; }
+    showSpinner();
+    try {
+      const { user } = await signInWithEmailAndPassword(auth, email, password);
+      const userDoc = await getDoc(doc(db, 'users', user.uid));
+      if (!userDoc.exists()) { toast(t('User not found','उपयोगकर्ता नहीं मिला'), 'error'); hideSpinner(); return; }
+      const role = userDoc.data().role;
+      if (role !== staffRole) { toast(t(`Wrong portal. Your role: ${role}`,`गलत पोर्टल। आपका रोल: ${role}`), 'error'); hideSpinner(); return; }
+      toast(t('Login successful!','लॉगिन सफल!'), 'success');
+      setTimeout(() => redirect(role), 700);
+    } catch(err) {
+      hideSpinner();
+      toast(err.code === 'auth/invalid-credential' ? t('Invalid email or password','गलत ईमेल या पासवर्ड') : err.message, 'error');
+    }
+  };
+
+  // ─── CUSTOMER LOGIN ───
+  window.handleLogin = async () => {
+    const email = document.getElementById('loginEmail').value.trim();
+    const password = document.getElementById('loginPassword').value;
+    if (!email || !password) { toast(t('Fill all fields','सभी फ़ील्ड भरें'), 'error'); return; }
+    showSpinner();
+    try {
+      const { user } = await signInWithEmailAndPassword(auth, email, password);
+      const userDoc = await getDoc(doc(db, 'users', user.uid));
+      if (!userDoc.exists()) { toast(t('Account not found','अकाउंट नहीं मिला'), 'error'); hideSpinner(); return; }
+      const role = userDoc.data().role;
+      if (role !== 'customer') { toast(t('Use Admin/Delivery button above for staff login','स्टाफ ऊपर के बटन से लॉगिन करें'), 'error'); hideSpinner(); return; }
+      toast(t('Welcome back!','वापसी पर स्वागत!'), 'success');
+      setTimeout(() => redirect(role), 700);
+    } catch(err) {
+      hideSpinner();
+      toast(err.code === 'auth/invalid-credential' ? t('Invalid email or password','गलत ईमेल या पासवर्ड') : err.message, 'error');
+    }
+  };
+
+  // ─── CUSTOMER SIGNUP ───
+  window.handleSignup = async () => {
+    const name = document.getElementById('signupName').value.trim();
+    const email = document.getElementById('signupEmail').value.trim();
+    const phone = document.getElementById('signupPhone').value.trim();
+    const code = document.getElementById('phoneCode').value.trim();
+    const password = document.getElementById('signupPassword').value;
+    if (!name||!email||!phone||!password) { toast(t('Fill all fields','सभी फ़ील्ड भरें'),'error'); return; }
+    if (!/^\d{10}$/.test(phone)) { toast(t('Enter valid 10-digit number','सही 10 अंकों का नंबर डालें'),'error'); return; }
+    if (password.length < 6) { toast(t('Password min 6 chars','पासवर्ड कम से कम 6 अक्षर'),'error'); return; }
+    showSpinner();
+    try {
+      const { user } = await createUserWithEmailAndPassword(auth, email, password);
+      await setDoc(doc(db, 'users', user.uid), { id: user.uid, name, email, phone: code+phone, role: 'customer', createdAt: new Date() });
+      toast(t('Account created!','अकाउंट बन गया!'), 'success');
+      setTimeout(() => window.location.href = 'customer.html', 800);
+    } catch(err) {
+      hideSpinner();
+      toast(err.code === 'auth/email-already-in-use' ? t('Email already registered','यह ईमेल पहले से है') : err.message, 'error');
+    }
+  };
+
+  // ─── AUTH REDIRECT ───
+  onAuthStateChanged(auth, async (user) => {
+    if (user) {
+      const d = await getDoc(doc(db, 'users', user.uid));
+      if (d.exists()) redirect(d.data().role);
+    }
+  });
+  function redirect(r) {
+    if (r==='customer') window.location.href='customer.html';
+    else if (r==='delivery') window.location.href='delivery.html';
+    else if (r==='admin') window.location.href='admin.html';
+  }
+
+  // ─── TOAST & SPINNER ───
+  window.toast = (msg, type='info') => {
+    const c = document.getElementById('toast-container');
+    const el = document.createElement('div');
+    el.className = `toast ${type}`;
+    el.innerHTML = `<span>${{success:'✅',error:'❌',info:'ℹ️'}[type]||''}</span> ${msg}`;
+    c.appendChild(el);
+    setTimeout(() => { el.style.animation = 'toastOut .3s ease forwards'; setTimeout(() => el.remove(), 300); }, 3000);
+  };
+  const spinner = document.getElementById('spinner');
+  window.showSpinner = () => spinner.classList.add('show');
+  window.hideSpinner = () => spinner.classList.remove('show');
+</script>
+</body>
+</html>

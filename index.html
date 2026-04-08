@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Radhika Dairy</title>
+  <meta name="theme-color" content="#c62828" id="themeColorMeta" />
+  <link rel="manifest" href="manifest.json" />
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch(()=>{});
+    }
+    // Apply saved theme ASAP to avoid flash
+    const t = localStorage.getItem('rd_theme') || 'light';
+    document.documentElement.setAttribute('data-theme', t);
+  </script>
+</head>
+<body>
+  <script type="module">
+    import { auth } from './firebase-config.js';
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    const db = getFirestore();
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        const d = await getDoc(doc(db, 'users', user.uid));
+        if (d.exists()) {
+          const r = d.data().role;
+          if (r === 'customer') window.location.href = 'customer.html';
+          else if (r === 'delivery') window.location.href = 'delivery.html';
+          else if (r === 'admin') window.location.href = 'admin.html';
+          return;
+        }
+      }
+      window.location.href = 'login.html';
+    });
+  </script>
+</body>
+</html>
