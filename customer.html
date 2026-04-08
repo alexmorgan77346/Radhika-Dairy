@@ -17,7 +17,7 @@
 
 <div class="overlay" id="overlay" onclick="closeCart()"></div>
 
-<!-- ── CART DRAWER ── -->
+<!-- CART DRAWER -->
 <div class="cart-drawer" id="cartDrawer">
   <div class="drawer-handle"></div>
   <div class="drawer-header">
@@ -26,12 +26,10 @@
   </div>
   <div class="drawer-body" id="cartBody"></div>
   <div class="drawer-footer">
-    <!-- Address with GPS -->
     <div style="position:relative;margin-bottom:10px;">
       <textarea class="address-input" id="deliveryAddress" rows="2" placeholder="📍 Enter delivery address..."></textarea>
       <button id="gpsBtn" onclick="getLocation()" title="Use GPS" style="position:absolute;bottom:10px;right:8px;background:var(--primary-light);color:var(--primary);border:none;border-radius:7px;padding:5px 8px;font-size:0.8rem;font-weight:700;cursor:pointer;">📡 GPS</button>
     </div>
-    <!-- Mobile number -->
     <div style="display:flex;gap:7px;margin-bottom:12px;">
       <input type="tel" id="orderPhone" value="+91" style="width:70px;padding:9px 8px;border:2px solid var(--border);border-radius:8px;font-size:0.88rem;background:var(--bg);color:var(--text);font-family:var(--font);" />
       <input type="tel" id="orderPhoneNum" placeholder="Mobile number" maxlength="10" style="flex:1;padding:9px 12px;border:2px solid var(--border);border-radius:8px;font-size:0.88rem;background:var(--bg);color:var(--text);font-family:var(--font);" />
@@ -44,7 +42,7 @@
   </div>
 </div>
 
-<!-- ── UTILITY BAR ── -->
+<!-- UTILITY BAR -->
 <div class="util-bar">
   <div class="util-left">
     <button class="util-btn active" id="btnEN" onclick="setLang('en')">EN</button>
@@ -55,7 +53,7 @@
   </div>
 </div>
 
-<!-- ── TOP NAV ── -->
+<!-- TOP NAV -->
 <nav class="top-nav">
   <div class="brand">🥛 <span id="brandName">Radhika Dairy</span></div>
   <div class="flex gap-8">
@@ -66,7 +64,7 @@
   </div>
 </nav>
 
-<!-- ── HOME PAGE ── -->
+<!-- HOME PAGE -->
 <div id="page-home" class="page-content" style="display:none;">
   <div class="hero-banner">
     <div class="hero-tag" data-en="🌟 FRESH DAILY" data-hi="🌟 रोज़ ताज़ा">🌟 FRESH DAILY</div>
@@ -90,7 +88,7 @@
   <div style="height:20px;"></div>
 </div>
 
-<!-- ── ORDERS PAGE ── -->
+<!-- ORDERS PAGE -->
 <div id="page-orders" class="page-content" style="display:none;">
   <div class="section-header" style="padding-top:10px;">
     <h2 data-en="My Orders" data-hi="मेरे ऑर्डर">My Orders</h2>
@@ -99,7 +97,7 @@
   <div style="height:20px;"></div>
 </div>
 
-<!-- ── PROFILE PAGE ── -->
+<!-- PROFILE PAGE -->
 <div id="page-profile" style="display:none;">
   <div class="profile-header">
     <div class="profile-avatar">👤</div>
@@ -130,7 +128,7 @@
   </div>
 </div>
 
-<!-- ── BOTTOM NAV ── -->
+<!-- BOTTOM NAV -->
 <nav class="bottom-nav">
   <button class="bottom-nav-item active" id="nav-home" onclick="showPage('home')">
     <div class="nav-icon">🏠</div><span data-en="Home" data-hi="होम">Home</span>
@@ -150,29 +148,43 @@
   import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
   import { collection, doc, getDoc, addDoc, query, where, orderBy, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+  // ── STATE (Declared FIRST - Important!) ──
+  let currentUser = null;
+  let allProducts = [];
+  let cart = {};
+  let currentCategory = 'all';
+
   // ── THEME ──
   const savedTheme = localStorage.getItem('rd_theme') || 'light';
   applyTheme(savedTheme);
+
   function applyTheme(t) {
     document.documentElement.setAttribute('data-theme', t);
     document.getElementById('themeColorMeta').content = t === 'dark' ? '#8e0000' : '#c62828';
     document.getElementById('btnTheme').textContent = t === 'dark' ? '☀️' : '🌙';
     localStorage.setItem('rd_theme', t);
   }
-  window.toggleTheme = () => applyTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
 
-  // ── STATE ──
-let currentUser = null, allProducts = [], cart = {}, currentCategory = 'all';
+  window.toggleTheme = () => {
+    const current = document.documentElement.getAttribute('data-theme');
+    applyTheme(current === 'dark' ? 'light' : 'dark');
+  };
 
   // ── LANGUAGE ──
   const savedLang = localStorage.getItem('rd_lang') || 'en';
   applyLang(savedLang);
+
   function applyLang(lang) {
     localStorage.setItem('rd_lang', lang);
     document.getElementById('btnEN').classList.toggle('active', lang === 'en');
     document.getElementById('btnHI').classList.toggle('active', lang === 'hi');
-    document.querySelectorAll('[data-en]').forEach(el => { el.textContent = lang === 'hi' ? (el.dataset.hi || el.dataset.en) : el.dataset.en; });
-    // Cart & order texts
+
+    // Translate all elements with data-en/data-hi
+    document.querySelectorAll('[data-en]').forEach(el => {
+      el.textContent = lang === 'hi' ? (el.dataset.hi || el.dataset.en) : el.dataset.en;
+    });
+
+    // Update static texts
     document.getElementById('cartTitle').textContent = lang === 'hi' ? '🛒 आपका कार्ट' : '🛒 Your Cart';
     document.getElementById('totalLabel').textContent = lang === 'hi' ? 'कुल राशि' : 'Total Amount';
     document.getElementById('placeOrderBtn').textContent = lang === 'hi' ? '✅ ऑर्डर दें' : '✅ Place Order';
@@ -180,29 +192,46 @@ let currentUser = null, allProducts = [], cart = {}, currentCategory = 'all';
     document.getElementById('orderPhoneNum').placeholder = lang === 'hi' ? 'मोबाइल नंबर' : 'Mobile number';
     document.getElementById('spinnerText').textContent = lang === 'hi' ? 'लोड हो रहा है...' : 'Loading...';
     document.getElementById('gpsBtn').textContent = lang === 'hi' ? '📡 जीपीएस' : '📡 GPS';
-    renderProducts();
-  }
-  window.setLang = (lang) => applyLang(lang);
-  function L(en, hi) { return localStorage.getItem('rd_lang') === 'hi' ? hi : en; }
 
-  // ── STATE ──
-  let currentUser = null, allProducts = [], cart = {}, currentCategory = 'all';
+    // Render products only if data is loaded
+    if (allProducts.length > 0) {
+      renderProducts();
+    }
+  }
+
+  window.setLang = (lang) => applyLang(lang);
+
+  function L(en, hi) {
+    return localStorage.getItem('rd_lang') === 'hi' ? hi : en;
+  }
 
   // ── AUTH ──
   onAuthStateChanged(auth, async (user) => {
-    if (!user) { window.location.href = 'login.html'; return; }
+    if (!user) {
+      window.location.href = 'login.html';
+      return;
+    }
+
     const userDoc = await getDoc(doc(db, 'users', user.uid));
-    if (!userDoc.exists() || userDoc.data().role !== 'customer') { await signOut(auth); window.location.href = 'login.html'; return; }
+    if (!userDoc.exists() || userDoc.data().role !== 'customer') {
+      await signOut(auth);
+      window.location.href = 'login.html';
+      return;
+    }
+
     currentUser = { uid: user.uid, ...userDoc.data() };
+
     document.getElementById('userGreeting').textContent = `${L('Hi','नमस्ते')}, ${currentUser.name.split(' ')[0]}!`;
     document.getElementById('profileName').textContent = currentUser.name;
     document.getElementById('profileEmail').textContent = currentUser.email;
     document.getElementById('profilePhone').textContent = currentUser.phone || '';
-    // Pre-fill phone in cart
+
+    // Pre-fill phone
     if (currentUser.phone) {
-      const ph = currentUser.phone.replace('+91','');
+      const ph = currentUser.phone.replace('+91', '');
       document.getElementById('orderPhoneNum').value = ph;
     }
+
     loadProducts();
     showPage('home');
     hideSpinner();
@@ -211,11 +240,18 @@ let currentUser = null, allProducts = [], cart = {}, currentCategory = 'all';
   // ── NAV ──
   window.showPage = (page) => {
     ['home','orders','profile'].forEach(p => {
-      document.getElementById(`page-${p}`).style.display = 'none';
-      document.getElementById(`nav-${p}`)?.classList.remove('active');
+      const el = document.getElementById(`page-${p}`);
+      if (el) el.style.display = 'none';
+      const nav = document.getElementById(`nav-${p}`);
+      if (nav) nav.classList.remove('active');
     });
-    document.getElementById(`page-${page}`).style.display = 'block';
-    document.getElementById(`nav-${page}`)?.classList.add('active');
+
+    const pageEl = document.getElementById(`page-${page}`);
+    if (pageEl) pageEl.style.display = 'block';
+
+    const navEl = document.getElementById(`nav-${page}`);
+    if (navEl) navEl.classList.add('active');
+
     if (page === 'orders') loadOrders();
   };
 
@@ -227,35 +263,49 @@ let currentUser = null, allProducts = [], cart = {}, currentCategory = 'all';
     });
   }
 
-  const emojiMap = { milk:'🥛',curd:'🫙',butter:'🧈',cheese:'🧀',paneer:'🍱',ghee:'✨',default:'🛍️' };
+  const emojiMap = {
+    milk: '🥛', curd: '🫙', butter: '🧈', cheese: '🧀',
+    paneer: '🍱', ghee: '✨', default: '🛍️'
+  };
 
   function renderProducts() {
     const grid = document.getElementById('productsGrid');
-    const filtered = currentCategory === 'all' ? allProducts : allProducts.filter(p => p.category === currentCategory);
+    if (!grid) return;
+
+    const filtered = currentCategory === 'all' 
+      ? allProducts 
+      : allProducts.filter(p => p.category === currentCategory);
+
     document.getElementById('productCount').textContent = filtered.length + ' ' + L('items','उत्पाद');
+
     if (!filtered.length) {
-      grid.innerHTML = `<div class="empty-state" style="grid-column:span 2;"><div class="empty-icon">📦</div><h3>${L('No products','कोई उत्पाद नहीं')}</h3></div>`;
+      grid.innerHTML = `<div class="empty-state" style="grid-column:span 2;">
+        <div class="empty-icon">📦</div>
+        <h3>${L('No products','कोई उत्पाद नहीं')}</h3>
+      </div>`;
       return;
     }
+
     grid.innerHTML = filtered.map(p => {
       const inCart = cart[p.id];
       const em = emojiMap[p.category] || emojiMap.default;
-      return `<div class="product-card">
-        <div class="product-img-wrap">
-          <img src="${p.image||''}" alt="${p.name}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" style="display:${p.image?'block':'none'};" />
-          <div class="product-emoji" style="display:${p.image?'none':'flex'};">${em}</div>
-        </div>
-        <div class="product-info">
-          <div class="product-category">${p.category}</div>
-          <div class="product-name">${p.name}</div>
-          <div class="product-footer">
-            <div class="product-price">₹${p.price}<span>/${L('unit','इकाई')}</span></div>
-            ${inCart
-              ? `<div class="qty-ctrl"><button onclick="changeQty('${p.id}',-1)">−</button><span>${inCart.qty}</span><button onclick="changeQty('${p.id}',1)">+</button></div>`
-              : `<button class="add-btn" onclick="addToCart('${p.id}')">+</button>`}
+      return `
+        <div class="product-card">
+          <div class="product-img-wrap">
+            <img src="${p.image||''}" alt="${p.name}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" style="display:${p.image?'block':'none'};" />
+            <div class="product-emoji" style="display:${p.image?'none':'flex'};">${em}</div>
           </div>
-        </div>
-      </div>`;
+          <div class="product-info">
+            <div class="product-category">${p.category}</div>
+            <div class="product-name">${p.name}</div>
+            <div class="product-footer">
+              <div class="product-price">₹${p.price}<span>/${L('unit','इकाई')}</span></div>
+              ${inCart 
+                ? `<div class="qty-ctrl"><button onclick="changeQty('${p.id}',-1)">−</button><span>${inCart.qty}</span><button onclick="changeQty('${p.id}',1)">+</button></div>`
+                : `<button class="add-btn" onclick="addToCart('${p.id}')">+</button>`}
+            </div>
+          </div>
+        </div>`;
     }).join('');
   }
 
@@ -266,72 +316,90 @@ let currentUser = null, allProducts = [], cart = {}, currentCategory = 'all';
     renderProducts();
   };
 
-  // ── CART ──
+  // ── CART FUNCTIONS ──
   window.addToCart = (id) => {
     const p = allProducts.find(x => x.id === id);
     if (!p) return;
     cart[id] = { ...p, qty: 1 };
-    updateBadge(); renderProducts();
+    updateBadge();
+    renderProducts();
     toast(`${p.name} ${L('added!','जोड़ा!')}`, 'success');
   };
+
   window.changeQty = (id, d) => {
     if (!cart[id]) return;
     cart[id].qty += d;
     if (cart[id].qty <= 0) delete cart[id];
-    updateBadge(); renderProducts();
-    if (document.getElementById('cartDrawer').classList.contains('show')) renderCartBody();
+    updateBadge();
+    renderProducts();
+    if (document.getElementById('cartDrawer').classList.contains('show')) {
+      renderCartBody();
+    }
   };
+
   function updateBadge() {
-    const n = Object.values(cart).reduce((s,i) => s+i.qty, 0);
+    const n = Object.values(cart).reduce((s, i) => s + i.qty, 0);
     const b = document.getElementById('cartBadge');
-    b.textContent = n; b.style.display = n > 0 ? 'flex' : 'none';
+    b.textContent = n;
+    b.style.display = n > 0 ? 'flex' : 'none';
   }
+
   window.openCart = () => {
-    if (!Object.keys(cart).length) { toast(L('Cart is empty!','कार्ट खाली है!'), 'info'); return; }
+    if (!Object.keys(cart).length) {
+      toast(L('Cart is empty!','कार्ट खाली है!'), 'info');
+      return;
+    }
     renderCartBody();
     document.getElementById('cartDrawer').classList.add('show');
     document.getElementById('overlay').classList.add('show');
   };
+
   window.closeCart = () => {
     document.getElementById('cartDrawer').classList.remove('show');
     document.getElementById('overlay').classList.remove('show');
   };
+
   function renderCartBody() {
     const items = Object.values(cart);
-    const total = items.reduce((s,i) => s+i.price*i.qty, 0);
+    const total = items.reduce((s, i) => s + i.price * i.qty, 0);
+
     document.getElementById('cartBody').innerHTML = items.map(item => {
-      const em = emojiMap[item.category]||emojiMap.default;
-      return `<div class="cart-item">
-        <div class="cart-item-img">
-          <img src="${item.image||''}" onerror="this.style.display='none';this.parentElement.textContent='${em}';" style="display:${item.image?'block':'none'};" />
-          ${item.image?'':em}
-        </div>
-        <div class="cart-item-info">
-          <div class="cart-item-name">${item.name}</div>
-          <div class="cart-item-price">₹${item.price} × ${item.qty} = ₹${item.price*item.qty}</div>
-        </div>
-        <div class="qty-ctrl">
-          <button onclick="changeQty('${item.id}',-1)">−</button>
-          <span>${item.qty}</span>
-          <button onclick="changeQty('${item.id}',1)">+</button>
-        </div>
-      </div>`;
+      const em = emojiMap[item.category] || emojiMap.default;
+      return `
+        <div class="cart-item">
+          <div class="cart-item-img">
+            <img src="${item.image||''}" onerror="this.style.display='none';this.parentElement.textContent='${em}';" style="display:${item.image?'block':'none'};" />
+            ${item.image ? '' : em}
+          </div>
+          <div class="cart-item-info">
+            <div class="cart-item-name">${item.name}</div>
+            <div class="cart-item-price">₹${item.price} × ${item.qty} = ₹${item.price*item.qty}</div>
+          </div>
+          <div class="qty-ctrl">
+            <button onclick="changeQty('${item.id}',-1)">−</button>
+            <span>${item.qty}</span>
+            <button onclick="changeQty('${item.id}',1)">+</button>
+          </div>
+        </div>`;
     }).join('');
+
     document.getElementById('cartTotal').textContent = `₹${total}`;
   }
 
-  // ── GPS LOCATION ──
+  // ── GPS ──
   window.getLocation = () => {
     const btn = document.getElementById('gpsBtn');
-    const lang = localStorage.getItem('rd_lang');
-    if (!navigator.geolocation) { toast(L('GPS not supported','GPS उपलब्ध नहीं'), 'error'); return; }
+    if (!navigator.geolocation) {
+      toast(L('GPS not supported','GPS उपलब्ध नहीं'), 'error');
+      return;
+    }
     btn.textContent = '⏳';
     btn.disabled = true;
+
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
         const { latitude, longitude } = pos.coords;
         try {
-          // Reverse geocode using open nominatim API (free, no key)
           const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`);
           const data = await res.json();
           const address = data.display_name || `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
@@ -341,12 +409,12 @@ let currentUser = null, allProducts = [], cart = {}, currentCategory = 'all';
           document.getElementById('deliveryAddress').value = `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`;
           toast(L('Location set (coords)','स्थान सेट किया'), 'info');
         }
-        btn.textContent = lang === 'hi' ? '📡 जीपीएस' : '📡 GPS';
+        btn.textContent = L('📡 GPS', '📡 जीपीएस');
         btn.disabled = false;
       },
-      (err) => {
+      () => {
         toast(L('GPS denied. Enter address manually.','GPS अस्वीकृत। पता मैन्युअल डालें।'), 'error');
-        btn.textContent = lang === 'hi' ? '📡 जीपीएस' : '📡 GPS';
+        btn.textContent = L('📡 GPS', '📡 जीपीएस');
         btn.disabled = false;
       },
       { enableHighAccuracy: true, timeout: 10000 }
@@ -358,30 +426,39 @@ let currentUser = null, allProducts = [], cart = {}, currentCategory = 'all';
     const address = document.getElementById('deliveryAddress').value.trim();
     const phoneNum = document.getElementById('orderPhoneNum').value.trim();
     const phoneCode = document.getElementById('orderPhone').value.trim();
-    if (!address) { toast(L('Enter delivery address','पता डालें'), 'error'); return; }
-    if (!phoneNum || phoneNum.length < 10) { toast(L('Enter valid mobile number','सही मोबाइल नंबर डालें'), 'error'); return; }
-    if (!Object.keys(cart).length) { toast(L('Cart is empty','कार्ट खाली है'), 'error'); return; }
+
+    if (!address) return toast(L('Enter delivery address','पता डालें'), 'error');
+    if (!phoneNum || phoneNum.length < 10) return toast(L('Enter valid mobile number','सही मोबाइल नंबर डालें'), 'error');
+    if (!Object.keys(cart).length) return toast(L('Cart is empty','कार्ट खाली है'), 'error');
+
     showSpinner();
+
     try {
-      const items = Object.values(cart).map(i => ({ name:i.name, price:i.price, quantity:i.qty }));
-      const totalPrice = items.reduce((s,i) => s+i.price*i.quantity, 0);
-      await addDoc(collection(db,'orders'), {
+      const items = Object.values(cart).map(i => ({ name: i.name, price: i.price, quantity: i.qty }));
+      const totalPrice = items.reduce((s, i) => s + i.price * i.quantity, 0);
+
+      await addDoc(collection(db, 'orders'), {
         customerId: currentUser.uid,
         customerName: currentUser.name,
         customerPhone: phoneCode + phoneNum,
-        items, totalPrice,
+        items,
+        totalPrice,
         status: 'pending',
         deliveryBoyId: null,
         address,
         timestamp: serverTimestamp()
       });
-      cart = {}; updateBadge(); closeCart();
+
+      cart = {};
+      updateBadge();
+      closeCart();
       document.getElementById('deliveryAddress').value = '';
       renderProducts();
+
       hideSpinner();
       toast(L('🎉 Order placed!','🎉 ऑर्डर दिया गया!'), 'success');
       setTimeout(() => showPage('orders'), 1200);
-    } catch(err) {
+    } catch (err) {
       hideSpinner();
       toast(L('Order failed: ','ऑर्डर विफल: ') + err.message, 'error');
     }
@@ -389,54 +466,78 @@ let currentUser = null, allProducts = [], cart = {}, currentCategory = 'all';
 
   // ── ORDERS ──
   function loadOrders() {
-    const q = query(collection(db,'orders'), where('customerId','==',currentUser.uid), orderBy('timestamp','desc'));
-    onSnapshot(q, snap => renderOrders(snap.docs.map(d => ({ id:d.id,...d.data() }))));
+    if (!currentUser) return;
+    const q = query(collection(db, 'orders'), 
+      where('customerId', '==', currentUser.uid), 
+      orderBy('timestamp', 'desc')
+    );
+    onSnapshot(q, snap => {
+      renderOrders(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+    });
   }
 
   function renderOrders(orders) {
     const list = document.getElementById('ordersList');
     if (!orders.length) {
-      list.innerHTML = `<div class="empty-state"><div class="empty-icon">📭</div><h3>${L('No orders yet','अभी कोई ऑर्डर नहीं')}</h3><p>${L('Start shopping!','शॉपिंग शुरू करें!')}</p></div>`;
+      list.innerHTML = `<div class="empty-state">
+        <div class="empty-icon">📭</div>
+        <h3>${L('No orders yet','अभी कोई ऑर्डर नहीं')}</h3>
+        <p>${L('Start shopping!','शॉपिंग शुरू करें!')}</p>
+      </div>`;
       return;
     }
+
     const statusL = { pending: L('Pending','पेंडिंग'), assigned: L('Out for Delivery','डिलीवरी पर'), delivered: L('Delivered','डिलीवर') };
     const statusC = { pending:'status-pending', assigned:'status-assigned', delivered:'status-delivered' };
     const stepNames = [L('Placed','दिया'), L('Dispatched','भेजा'), L('Delivered','मिला')];
     const statusOrd = { pending:0, assigned:1, delivered:2 };
+
     list.innerHTML = orders.map(o => {
       const date = o.timestamp?.toDate ? o.timestamp.toDate().toLocaleString('en-IN') : L('Just now','अभी');
       const cur = statusOrd[o.status] || 0;
-      const tracker = stepNames.map((s,i) => `
-        <div class="tracker-step ${i<cur?'done':i===cur?'active':''}">
-          <div class="tracker-dot">${i<cur?'✓':i+1}</div>
+      const tracker = stepNames.map((s, i) => `
+        <div class="tracker-step ${i < cur ? 'done' : i === cur ? 'active' : ''}">
+          <div class="tracker-dot">${i < cur ? '✓' : i + 1}</div>
           <div class="tracker-label">${s}</div>
         </div>`).join('');
-      return `<div class="order-card">
-        <div class="order-header">
-          <div><div class="order-id">#${o.id.slice(-6).toUpperCase()}</div><div class="order-date">${date}</div></div>
-          <span class="status-badge ${statusC[o.status]}">${statusL[o.status]}</span>
-        </div>
-        <div class="order-tracker">${tracker}</div>
-        <div class="order-items">${o.items.map(i=>`<div class="order-item-line">• ${i.name} × ${i.quantity} = ₹${i.price*i.quantity}</div>`).join('')}</div>
-        ${o.customerPhone ? `<div style="font-size:0.78rem;color:var(--text-light);margin-bottom:6px;">📱 ${o.customerPhone}</div>` : ''}
-        <div class="order-address">📍 ${o.address}</div>
-        <div class="order-footer"><span class="order-total">${L('Total','कुल')}: ₹${o.totalPrice}</span></div>
-      </div>`;
+
+      return `
+        <div class="order-card">
+          <div class="order-header">
+            <div>
+              <div class="order-id">#${o.id.slice(-6).toUpperCase()}</div>
+              <div class="order-date">${date}</div>
+            </div>
+            <span class="status-badge ${statusC[o.status]}">${statusL[o.status]}</span>
+          </div>
+          <div class="order-tracker">${tracker}</div>
+          <div class="order-items">${o.items.map(i => `<div class="order-item-line">• ${i.name} × ${i.quantity} = ₹${i.price*i.quantity}</div>`).join('')}</div>
+          ${o.customerPhone ? `<div style="font-size:0.78rem;color:var(--text-light);margin-bottom:6px;">📱 ${o.customerPhone}</div>` : ''}
+          <div class="order-address">📍 ${o.address}</div>
+          <div class="order-footer"><span class="order-total">${L('Total','कुल')}: ₹${o.totalPrice}</span></div>
+        </div>`;
     }).join('');
   }
 
   // ── LOGOUT ──
-  window.handleLogout = async () => { await signOut(auth); window.location.href = 'login.html'; };
+  window.handleLogout = async () => {
+    await signOut(auth);
+    window.location.href = 'login.html';
+  };
 
   // ── TOAST & SPINNER ──
-  window.toast = (msg, type='info') => {
+  window.toast = (msg, type = 'info') => {
     const c = document.getElementById('toast-container');
     const el = document.createElement('div');
     el.className = `toast ${type}`;
-    el.innerHTML = `<span>${{success:'✅',error:'❌',info:'ℹ️'}[type]||''}</span> ${msg}`;
+    el.innerHTML = `<span>${{success:'✅',error:'❌',info:'ℹ️'}[type] || ''}</span> ${msg}`;
     c.appendChild(el);
-    setTimeout(() => { el.style.animation = 'toastOut .3s ease forwards'; setTimeout(() => el.remove(), 300); }, 3000);
+    setTimeout(() => {
+      el.style.animation = 'toastOut .3s ease forwards';
+      setTimeout(() => el.remove(), 300);
+    }, 3000);
   };
+
   window.showSpinner = () => document.getElementById('spinner').classList.add('show');
   window.hideSpinner = () => document.getElementById('spinner').classList.remove('show');
 </script>
