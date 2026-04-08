@@ -2,7 +2,7 @@
   "name": "Dairy Delight",
   "short_name": "DairyDelight",
   "description": "Fresh dairy delivered to your door",
-  "start_url": "/index.html",
+  "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#1a73e8",
   "theme_color": "#1a73e8",
