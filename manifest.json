@@ -1,8 +1,6 @@
 {
-  "name": "RadhikaDairy
-",
-  "short_name": "RadhikaDairy
-",
+  "name": "Radhika-Dairy",
+  "short_name": "Radhika-Dairy",
   "description": "Fresh dairy delivered to your door",
   "start_url": "./index.html",
   "display": "standalone",
