@@ -54,9 +54,7 @@
     .form-group input,.form-group select{width:100%;padding:11px 14px;border:2px solid var(--border);border-radius:10px;font-size:0.93rem;color:var(--text);background:var(--bg);font-family:var(--font);transition:all .2s;}
     .form-group input:focus,.form-group select:focus{border-color:var(--primary);outline:none;box-shadow:0 0 0 3px var(--primary-light);}
 
-    .phone-row{display:flex;gap:8px;}
-    .phone-code{width:76px;flex-shrink:0;padding:11px 10px;border:2px solid var(--border);border-radius:10px;font-size:0.9rem;background:var(--bg);color:var(--text);font-family:var(--font);}
-    .phone-code:focus{border-color:var(--primary);outline:none;}
+
 
     .btn-primary{width:100%;padding:13px;background:var(--primary);color:#fff;border:none;border-radius:10px;font-size:1rem;font-weight:800;cursor:pointer;font-family:var(--font);transition:all .2s;margin-top:4px;}
     .btn-primary:hover{background:var(--primary-dark);transform:translateY(-1px);}
@@ -168,9 +166,27 @@
       </div>
       <div class="form-group">
         <label data-en="MOBILE NUMBER" data-hi="मोबाइल नंबर">MOBILE NUMBER</label>
-        <div class="phone-row">
-          <input type="tel" class="phone-code" value="+91" id="phoneCode" maxlength="4" />
-          <input type="tel" id="signupPhone" data-plen="10-digit number" data-phi="10 अंकों का नंबर" placeholder="10-digit number" maxlength="10" style="flex:1;" />
+        <div style="display:flex;align-items:center;border:2px solid var(--border);border-radius:10px;overflow:hidden;background:var(--bg);transition:border-color .2s,box-shadow .2s;" id="phoneWrapper">
+          <!-- +91 prefix badge - visually inside the box -->
+          <div style="padding:11px 12px;font-size:0.9rem;font-weight:800;color:var(--primary);background:var(--primary-light);border-right:2px solid var(--border);white-space:nowrap;flex-shrink:0;line-height:1;">
+            🇮🇳 +91
+          </div>
+          <!-- Number input - no border, fills rest of box -->
+          <input type="tel" id="signupPhone"
+            data-plen="Mobile number" data-phi="मोबाइल नंबर"
+            placeholder="Mobile number"
+            inputmode="numeric"
+            maxlength="10"
+            pattern="[0-9]*"
+            oninput="this.value=this.value.replace(/[^0-9]/g,'')"
+            onfocus="document.getElementById('phoneWrapper').style.borderColor='var(--primary)';document.getElementById('phoneWrapper').style.boxShadow='0 0 0 3px var(--primary-light)'"
+            onblur="document.getElementById('phoneWrapper').style.borderColor='var(--border)';document.getElementById('phoneWrapper').style.boxShadow='none'"
+            style="flex:1;padding:11px 12px;border:none;outline:none;background:transparent;font-size:0.93rem;font-family:var(--font);color:var(--text);min-width:0;" />
+        </div>
+        <div style="font-size:.68rem;color:var(--text-light);margin-top:5px;display:flex;align-items:center;gap:4px;">
+          <span>ℹ️</span>
+          <span data-en="Enter 10 digits only — e.g. 9876543210"
+                data-hi="केवल 10 अंक डालें — जैसे 9876543210">Enter 10 digits only — e.g. 9876543210</span>
         </div>
       </div>
       <div class="form-group">
@@ -283,23 +299,49 @@
 
   // ─── CUSTOMER SIGNUP ───
   window.handleSignup = async () => {
-    const name = document.getElementById('signupName').value.trim();
-    const email = document.getElementById('signupEmail').value.trim();
-    const phone = document.getElementById('signupPhone').value.trim();
-    const code = document.getElementById('phoneCode').value.trim();
+    const name     = document.getElementById('signupName').value.trim();
+    const email    = document.getElementById('signupEmail').value.trim();
+    const rawPhone = document.getElementById('signupPhone').value.trim();
+    const code     = '+91';   // country code is fixed as +91
     const password = document.getElementById('signupPassword').value;
-    if (!name||!email||!phone||!password) { toast(t('Fill all fields','सभी फ़ील्ड भरें'),'error'); return; }
-    if (!/^\d{10}$/.test(phone)) { toast(t('Enter valid 10-digit number','सही 10 अंकों का नंबर डालें'),'error'); return; }
-    if (password.length < 6) { toast(t('Password min 6 chars','पासवर्ड कम से कम 6 अक्षर'),'error'); return; }
+
+    // Strip any non-digit characters (spaces, dashes, brackets) from phone
+    const phone = rawPhone.replace(/\D/g, '');
+
+    if (!name || !email || !phone || !password) {
+      toast(t('Please fill all fields', 'कृपया सभी फ़ील्ड भरें'), 'error'); return;
+    }
+    if (phone.length !== 10) {
+      toast(t(`Mobile number must be exactly 10 digits (you entered ${phone.length})`,
+              `मोबाइल नंबर 10 अंकों का होना चाहिए (आपने ${phone.length} डाले)`), 'error'); return;
+    }
+    if (!/^[6-9]\d{9}$/.test(phone)) {
+      toast(t('Enter a valid Indian mobile number (starts with 6-9)',
+              'सही भारतीय मोबाइल नंबर डालें (6-9 से शुरू)'), 'error'); return;
+    }
+    if (password.length < 6) {
+      toast(t('Password must be at least 6 characters', 'पासवर्ड कम से कम 6 अक्षर का होना चाहिए'), 'error'); return;
+    }
+
     showSpinner();
     try {
       const { user } = await createUserWithEmailAndPassword(auth, email, password);
-      await setDoc(doc(db, 'users', user.uid), { id: user.uid, name, email, phone: code+phone, role: 'customer', createdAt: new Date() });
-      toast(t('Account created!','अकाउंट बन गया!'), 'success');
+      await setDoc(doc(db, 'users', user.uid), {
+        id:    user.uid,
+        name,
+        email,
+        phone: code + phone,   // e.g. "+919876543210"
+        role:  'customer',
+        createdAt: new Date()
+      });
+      toast(t('Account created! Welcome 🎉', 'अकाउंट बन गया! स्वागत है 🎉'), 'success');
       setTimeout(() => window.location.href = 'customer.html', 800);
-    } catch(err) {
+    } catch (err) {
       hideSpinner();
-      toast(err.code === 'auth/email-already-in-use' ? t('Email already registered','यह ईमेल पहले से है') : err.message, 'error');
+      const msg = err.code === 'auth/email-already-in-use'
+        ? t('This email is already registered', 'यह ईमेल पहले से रजिस्टर है')
+        : err.message;
+      toast(msg, 'error');
     }
   };
 
