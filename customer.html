@@ -44,12 +44,17 @@
         📡 GPS
       </button>
     </div>
-    <!-- Phone number -->
-    <div style="display:flex;gap:7px;margin-bottom:11px;">
-      <input type="tel" id="orderPhone" value="+91"
-        style="width:68px;padding:9px 8px;border:2px solid var(--border);border-radius:8px;font-size:.86rem;background:var(--bg);color:var(--text);font-family:var(--font);"/>
+    <!-- Phone number — unified single box -->
+    <div style="display:flex;align-items:center;border:2px solid var(--border);border-radius:8px;overflow:hidden;background:var(--bg);margin-bottom:11px;transition:border-color .2s;" id="cartPhoneWrapper">
+      <div style="padding:9px 10px;font-size:.82rem;font-weight:800;color:var(--primary);background:var(--primary-light);border-right:2px solid var(--border);white-space:nowrap;flex-shrink:0;line-height:1;">
+        🇮🇳 +91
+      </div>
       <input type="tel" id="orderPhoneNum" placeholder="Mobile number" maxlength="10"
-        style="flex:1;padding:9px 12px;border:2px solid var(--border);border-radius:8px;font-size:.86rem;background:var(--bg);color:var(--text);font-family:var(--font);"/>
+        inputmode="numeric" pattern="[0-9]*"
+        oninput="this.value=this.value.replace(/[^0-9]/g,'')"
+        onfocus="document.getElementById('cartPhoneWrapper').style.borderColor='var(--primary)'"
+        onblur="document.getElementById('cartPhoneWrapper').style.borderColor='var(--border)'"
+        style="flex:1;padding:9px 11px;border:none;outline:none;background:transparent;font-size:.86rem;font-family:var(--font);color:var(--text);min-width:0;" />
     </div>
     <!-- Total + Place Order -->
     <div class="cart-total-row">
@@ -238,7 +243,8 @@ onAuthStateChanged(auth, async (user) => {
   document.getElementById('profileEmail').textContent = currentUser.email;
   document.getElementById('profilePhone').textContent = currentUser.phone || '';
   if (currentUser.phone) {
-    document.getElementById('orderPhoneNum').value = currentUser.phone.replace(/^\+91/, '');
+    // Strip +91 prefix and prefill just the 10-digit number
+    document.getElementById('orderPhoneNum').value = currentUser.phone.replace(/^\+91/, '').replace(/\D/g, '');
   }
   loadProducts();
   showPage('home');
@@ -424,7 +430,7 @@ window.getLocation = () => {
 window.placeOrder = async () => {
   const address  = document.getElementById('deliveryAddress').value.trim();
   const phoneNum = document.getElementById('orderPhoneNum').value.trim();
-  const phoneCode= document.getElementById('orderPhone').value.trim();
+  const phoneCode= '+91';  // fixed country code
 
   if (!address)                       { toast(L('Enter delivery address','डिलीवरी पता डालें'), 'error'); return; }
   if (!/^\d{10}$/.test(phoneNum))     { toast(L('Enter valid 10-digit number','सही 10 अंकों का नंबर डालें'), 'error'); return; }
