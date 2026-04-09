@@ -1,23 +1,32 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="light" data-lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Radhika Dairy – Shop</title>
-  <meta name="theme-color" content="#c62828" id="themeColorMeta" />
-  <link rel="manifest" href="manifest.json" />
-  <link rel="stylesheet" href="style.css" />
+  <meta name="theme-color" content="#c62828" id="themeColorMeta"/>
+  <link rel="manifest" href="manifest.json"/>
+  <link rel="stylesheet" href="style.css"/>
+  <script>
+    // Apply saved theme BEFORE render to prevent flash
+    const _t = localStorage.getItem('rd_theme') || 'light';
+    document.documentElement.setAttribute('data-theme', _t);
+    document.getElementById && (document.getElementById('themeColorMeta') || {}).setAttribute
+      && document.getElementById('themeColorMeta').setAttribute('content', _t === 'dark' ? '#8e0000' : '#c62828');
+  </script>
 </head>
 <body>
 
+<!-- Spinner -->
 <div class="spinner-overlay show" id="spinner">
   <div class="spinner"></div>
   <div class="spinner-text" id="spinnerText">Loading...</div>
 </div>
 
+<!-- Cart overlay backdrop -->
 <div class="overlay" id="overlay" onclick="closeCart()"></div>
 
-<!-- CART DRAWER -->
+<!-- ══════════════ CART DRAWER ══════════════ -->
 <div class="cart-drawer" id="cartDrawer">
   <div class="drawer-handle"></div>
   <div class="drawer-header">
@@ -26,14 +35,23 @@
   </div>
   <div class="drawer-body" id="cartBody"></div>
   <div class="drawer-footer">
-    <div style="position:relative;margin-bottom:10px;">
+    <!-- GPS Address -->
+    <div style="position:relative;margin-bottom:9px;">
       <textarea class="address-input" id="deliveryAddress" rows="2" placeholder="📍 Enter delivery address..."></textarea>
-      <button id="gpsBtn" onclick="getLocation()" title="Use GPS" style="position:absolute;bottom:10px;right:8px;background:var(--primary-light);color:var(--primary);border:none;border-radius:7px;padding:5px 8px;font-size:0.8rem;font-weight:700;cursor:pointer;">📡 GPS</button>
+      <button id="gpsBtn" onclick="getLocation()"
+        style="position:absolute;bottom:8px;right:8px;background:var(--primary-light);color:var(--primary);
+               border:none;border-radius:7px;padding:5px 8px;font-size:.78rem;font-weight:700;cursor:pointer;">
+        📡 GPS
+      </button>
     </div>
-    <div style="display:flex;gap:7px;margin-bottom:12px;">
-      <input type="tel" id="orderPhone" value="+91" style="width:70px;padding:9px 8px;border:2px solid var(--border);border-radius:8px;font-size:0.88rem;background:var(--bg);color:var(--text);font-family:var(--font);" />
-      <input type="tel" id="orderPhoneNum" placeholder="Mobile number" maxlength="10" style="flex:1;padding:9px 12px;border:2px solid var(--border);border-radius:8px;font-size:0.88rem;background:var(--bg);color:var(--text);font-family:var(--font);" />
+    <!-- Phone number -->
+    <div style="display:flex;gap:7px;margin-bottom:11px;">
+      <input type="tel" id="orderPhone" value="+91"
+        style="width:68px;padding:9px 8px;border:2px solid var(--border);border-radius:8px;font-size:.86rem;background:var(--bg);color:var(--text);font-family:var(--font);"/>
+      <input type="tel" id="orderPhoneNum" placeholder="Mobile number" maxlength="10"
+        style="flex:1;padding:9px 12px;border:2px solid var(--border);border-radius:8px;font-size:.86rem;background:var(--bg);color:var(--text);font-family:var(--font);"/>
     </div>
+    <!-- Total + Place Order -->
     <div class="cart-total-row">
       <span class="cart-total-label" id="totalLabel">Total Amount</span>
       <span class="cart-total-value" id="cartTotal">₹0</span>
@@ -42,7 +60,7 @@
   </div>
 </div>
 
-<!-- UTILITY BAR -->
+<!-- ══════════════ UTILITY BAR ══════════════ -->
 <div class="util-bar">
   <div class="util-left">
     <button class="util-btn active" id="btnEN" onclick="setLang('en')">EN</button>
@@ -53,57 +71,62 @@
   </div>
 </div>
 
-<!-- TOP NAV -->
+<!-- ══════════════ TOP NAV ══════════════ -->
 <nav class="top-nav">
-  <div class="brand">🥛 <span id="brandName">Radhika Dairy</span></div>
+  <div class="brand">🥛 Radhika Dairy</div>
   <div class="flex gap-8">
-    <span id="userGreeting" style="font-size:0.78rem;color:var(--text-light);align-self:center;"></span>
+    <span id="userGreeting" style="font-size:.76rem;color:var(--text-light);align-self:center;"></span>
     <button class="cart-btn" onclick="openCart()">
       🛒<span class="cart-badge" id="cartBadge" style="display:none;">0</span>
     </button>
   </div>
 </nav>
 
-<!-- HOME PAGE -->
+<!-- ══════════════ HOME PAGE ══════════════ -->
 <div id="page-home" class="page-content" style="display:none;">
   <div class="hero-banner">
     <div class="hero-tag" data-en="🌟 FRESH DAILY" data-hi="🌟 रोज़ ताज़ा">🌟 FRESH DAILY</div>
     <h2 data-en="Pure Dairy, Delivered Fresh" data-hi="शुद्ध डेयरी, ताज़ा डिलीवरी">Pure Dairy, Delivered Fresh</h2>
     <p data-en="From farm to your doorstep every morning" data-hi="खेत से आपके दरवाज़े तक हर सुबह">From farm to your doorstep every morning</p>
   </div>
-  <div class="section-tabs" id="categoryTabs">
-    <button class="section-tab active" onclick="filterCategory('all',this)" data-en="All" data-hi="सभी">All</button>
-    <button class="section-tab" onclick="filterCategory('milk',this)">🥛 <span data-en="Milk" data-hi="दूध">Milk</span></button>
-    <button class="section-tab" onclick="filterCategory('curd',this)">🫙 <span data-en="Curd" data-hi="दही">Curd</span></button>
-    <button class="section-tab" onclick="filterCategory('butter',this)">🧈 <span data-en="Butter" data-hi="मक्खन">Butter</span></button>
-    <button class="section-tab" onclick="filterCategory('cheese',this)">🧀 <span data-en="Cheese" data-hi="चीज़">Cheese</span></button>
-    <button class="section-tab" onclick="filterCategory('paneer',this)">🍱 <span data-en="Paneer" data-hi="पनीर">Paneer</span></button>
-    <button class="section-tab" onclick="filterCategory('ghee',this)">✨ <span data-en="Ghee" data-hi="घी">Ghee</span></button>
+
+  <!-- Category filter tabs -->
+  <div class="section-tabs">
+    <button class="section-tab active" onclick="filterCat('all',this)" data-en="All" data-hi="सभी">All</button>
+    <button class="section-tab" onclick="filterCat('milk',this)">🥛 <span data-en="Milk" data-hi="दूध">Milk</span></button>
+    <button class="section-tab" onclick="filterCat('curd',this)">🫙 <span data-en="Curd" data-hi="दही">Curd</span></button>
+    <button class="section-tab" onclick="filterCat('butter',this)">🧈 <span data-en="Butter" data-hi="मक्खन">Butter</span></button>
+    <button class="section-tab" onclick="filterCat('cheese',this)">🧀 <span data-en="Cheese" data-hi="चीज़">Cheese</span></button>
+    <button class="section-tab" onclick="filterCat('paneer',this)">🍱 <span data-en="Paneer" data-hi="पनीर">Paneer</span></button>
+    <button class="section-tab" onclick="filterCat('ghee',this)">✨ <span data-en="Ghee" data-hi="घी">Ghee</span></button>
   </div>
+
   <div class="section-header">
     <h2 data-en="Products" data-hi="उत्पाद">Products</h2>
     <span class="badge badge-primary" id="productCount">0</span>
   </div>
+
   <div class="products-grid" id="productsGrid"></div>
-  <div style="height:20px;"></div>
+  <div style="height:16px;"></div>
 </div>
 
-<!-- ORDERS PAGE -->
+<!-- ══════════════ ORDERS PAGE ══════════════ -->
 <div id="page-orders" class="page-content" style="display:none;">
-  <div class="section-header" style="padding-top:10px;">
+  <div class="section-header" style="padding-top:8px;">
     <h2 data-en="My Orders" data-hi="मेरे ऑर्डर">My Orders</h2>
+    <span class="badge badge-primary" id="orderCountBadge"></span>
   </div>
   <div class="orders-list" id="ordersList"></div>
-  <div style="height:20px;"></div>
+  <div style="height:16px;"></div>
 </div>
 
-<!-- PROFILE PAGE -->
+<!-- ══════════════ PROFILE PAGE ══════════════ -->
 <div id="page-profile" style="display:none;">
   <div class="profile-header">
     <div class="profile-avatar">👤</div>
     <div class="profile-name" id="profileName">–</div>
     <div class="profile-email" id="profileEmail">–</div>
-    <div id="profilePhone" style="font-size:0.82rem;opacity:0.75;margin-top:3px;">–</div>
+    <div id="profilePhone" style="font-size:.8rem;opacity:.75;margin-top:3px;"></div>
   </div>
   <div class="profile-body">
     <div class="profile-card">
@@ -128,7 +151,7 @@
   </div>
 </div>
 
-<!-- BOTTOM NAV -->
+<!-- ══════════════ BOTTOM NAV ══════════════ -->
 <nav class="bottom-nav">
   <button class="bottom-nav-item active" id="nav-home" onclick="showPage('home')">
     <div class="nav-icon">🏠</div><span data-en="Home" data-hi="होम">Home</span>
@@ -144,402 +167,399 @@
 <div id="toast-container"></div>
 
 <script type="module">
-  import { auth, db } from './firebase-config.js';
-  import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-  import { collection, doc, getDoc, addDoc, query, where, orderBy, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { auth, db } from './firebase-config.js';
+import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import {
+  collection, doc, getDoc, addDoc, query, where,
+  onSnapshot, serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-  // ── STATE (Declared FIRST - Important!) ──
-  let currentUser = null;
-  let allProducts = [];
-  let cart = {};
-  let currentCategory = 'all';
+// ════════════════════════════════════
+// STATE — declared first so applyLang
+// can safely reference allProducts
+// ════════════════════════════════════
+let currentUser = null;
+let allProducts = [];
+let cart        = {};   // { productId: { ...product, qty } }
+let currentCat  = 'all';
 
-  // ── THEME ──
-  const savedTheme = localStorage.getItem('rd_theme') || 'light';
-  applyTheme(savedTheme);
+// ════════════════════════════════════
+// THEME
+// ════════════════════════════════════
+const savedTheme = localStorage.getItem('rd_theme') || 'light';
+applyTheme(savedTheme);
+function applyTheme(t) {
+  document.documentElement.setAttribute('data-theme', t);
+  document.getElementById('themeColorMeta').content = t === 'dark' ? '#8e0000' : '#c62828';
+  document.getElementById('btnTheme').textContent   = t === 'dark' ? '☀️' : '🌙';
+  localStorage.setItem('rd_theme', t);
+}
+window.toggleTheme = () => applyTheme(
+  document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'
+);
 
-  function applyTheme(t) {
-    document.documentElement.setAttribute('data-theme', t);
-    document.getElementById('themeColorMeta').content = t === 'dark' ? '#8e0000' : '#c62828';
-    document.getElementById('btnTheme').textContent = t === 'dark' ? '☀️' : '🌙';
-    localStorage.setItem('rd_theme', t);
-  }
-
-  window.toggleTheme = () => {
-    const current = document.documentElement.getAttribute('data-theme');
-    applyTheme(current === 'dark' ? 'light' : 'dark');
-  };
-
-  // ── LANGUAGE ──
-  const savedLang = localStorage.getItem('rd_lang') || 'en';
-  applyLang(savedLang);
-
-  function applyLang(lang) {
-    localStorage.setItem('rd_lang', lang);
-    document.getElementById('btnEN').classList.toggle('active', lang === 'en');
-    document.getElementById('btnHI').classList.toggle('active', lang === 'hi');
-
-    // Translate all elements with data-en/data-hi
-    document.querySelectorAll('[data-en]').forEach(el => {
-      el.textContent = lang === 'hi' ? (el.dataset.hi || el.dataset.en) : el.dataset.en;
-    });
-
-    // Update static texts
-    document.getElementById('cartTitle').textContent = lang === 'hi' ? '🛒 आपका कार्ट' : '🛒 Your Cart';
-    document.getElementById('totalLabel').textContent = lang === 'hi' ? 'कुल राशि' : 'Total Amount';
-    document.getElementById('placeOrderBtn').textContent = lang === 'hi' ? '✅ ऑर्डर दें' : '✅ Place Order';
-    document.getElementById('deliveryAddress').placeholder = lang === 'hi' ? '📍 डिलीवरी पता दर्ज करें...' : '📍 Enter delivery address...';
-    document.getElementById('orderPhoneNum').placeholder = lang === 'hi' ? 'मोबाइल नंबर' : 'Mobile number';
-    document.getElementById('spinnerText').textContent = lang === 'hi' ? 'लोड हो रहा है...' : 'Loading...';
-    document.getElementById('gpsBtn').textContent = lang === 'hi' ? '📡 जीपीएस' : '📡 GPS';
-
-    // Render products only if data is loaded
-    if (allProducts.length > 0) {
-      renderProducts();
-    }
-  }
-
-  window.setLang = (lang) => applyLang(lang);
-
-  function L(en, hi) {
-    return localStorage.getItem('rd_lang') === 'hi' ? hi : en;
-  }
-
-  // ── AUTH ──
-  onAuthStateChanged(auth, async (user) => {
-    if (!user) {
-      window.location.href = 'login.html';
-      return;
-    }
-
-    const userDoc = await getDoc(doc(db, 'users', user.uid));
-    if (!userDoc.exists() || userDoc.data().role !== 'customer') {
-      await signOut(auth);
-      window.location.href = 'login.html';
-      return;
-    }
-
-    currentUser = { uid: user.uid, ...userDoc.data() };
-
-    document.getElementById('userGreeting').textContent = `${L('Hi','नमस्ते')}, ${currentUser.name.split(' ')[0]}!`;
-    document.getElementById('profileName').textContent = currentUser.name;
-    document.getElementById('profileEmail').textContent = currentUser.email;
-    document.getElementById('profilePhone').textContent = currentUser.phone || '';
-
-    // Pre-fill phone
-    if (currentUser.phone) {
-      const ph = currentUser.phone.replace('+91', '');
-      document.getElementById('orderPhoneNum').value = ph;
-    }
-
-    loadProducts();
-    showPage('home');
-    hideSpinner();
+// ════════════════════════════════════
+// LANGUAGE
+// ════════════════════════════════════
+const savedLang = localStorage.getItem('rd_lang') || 'en';
+applyLang(savedLang);
+function applyLang(lang) {
+  localStorage.setItem('rd_lang', lang);
+  document.getElementById('btnEN').classList.toggle('active', lang === 'en');
+  document.getElementById('btnHI').classList.toggle('active', lang === 'hi');
+  document.querySelectorAll('[data-en]').forEach(el => {
+    el.textContent = lang === 'hi' ? (el.dataset.hi || el.dataset.en) : el.dataset.en;
   });
+  document.getElementById('cartTitle').textContent            = lang === 'hi' ? '🛒 आपका कार्ट'             : '🛒 Your Cart';
+  document.getElementById('totalLabel').textContent           = lang === 'hi' ? 'कुल राशि'                  : 'Total Amount';
+  document.getElementById('placeOrderBtn').textContent        = lang === 'hi' ? '✅ ऑर्डर दें'               : '✅ Place Order';
+  document.getElementById('deliveryAddress').placeholder      = lang === 'hi' ? '📍 डिलीवरी पता दर्ज करें...' : '📍 Enter delivery address...';
+  document.getElementById('orderPhoneNum').placeholder        = lang === 'hi' ? 'मोबाइल नंबर'               : 'Mobile number';
+  document.getElementById('gpsBtn').textContent               = lang === 'hi' ? '📡 जीपीएस'                  : '📡 GPS';
+  document.getElementById('spinnerText').textContent          = lang === 'hi' ? 'लोड हो रहा है...'           : 'Loading...';
+  // Only re-render products after they have been loaded (avoids empty re-render on startup)
+  if (allProducts.length > 0) renderProducts();
+}
+window.setLang = (lang) => applyLang(lang);
+function L(en, hi) { return localStorage.getItem('rd_lang') === 'hi' ? hi : en; }
 
-  // ── NAV ──
-  window.showPage = (page) => {
-    ['home','orders','profile'].forEach(p => {
-      const el = document.getElementById(`page-${p}`);
-      if (el) el.style.display = 'none';
-      const nav = document.getElementById(`nav-${p}`);
-      if (nav) nav.classList.remove('active');
-    });
-
-    const pageEl = document.getElementById(`page-${page}`);
-    if (pageEl) pageEl.style.display = 'block';
-
-    const navEl = document.getElementById(`nav-${page}`);
-    if (navEl) navEl.classList.add('active');
-
-    if (page === 'orders') loadOrders();
-  };
-
-  // ── PRODUCTS ──
-  function loadProducts() {
-    onSnapshot(collection(db, 'products'), snap => {
-      allProducts = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-      renderProducts();
-    });
+// ════════════════════════════════════
+// AUTH CHECK
+// ════════════════════════════════════
+onAuthStateChanged(auth, async (user) => {
+  if (!user) { window.location.href = 'login.html'; return; }
+  const userDoc = await getDoc(doc(db, 'users', user.uid));
+  if (!userDoc.exists() || userDoc.data().role !== 'customer') {
+    await signOut(auth); window.location.href = 'login.html'; return;
   }
-
-  const emojiMap = {
-    milk: '🥛', curd: '🫙', butter: '🧈', cheese: '🧀',
-    paneer: '🍱', ghee: '✨', default: '🛍️'
-  };
-
-  function renderProducts() {
-    const grid = document.getElementById('productsGrid');
-    if (!grid) return;
-
-    const filtered = currentCategory === 'all' 
-      ? allProducts 
-      : allProducts.filter(p => p.category === currentCategory);
-
-    document.getElementById('productCount').textContent = filtered.length + ' ' + L('items','उत्पाद');
-
-    if (!filtered.length) {
-      grid.innerHTML = `<div class="empty-state" style="grid-column:span 2;">
-        <div class="empty-icon">📦</div>
-        <h3>${L('No products','कोई उत्पाद नहीं')}</h3>
-      </div>`;
-      return;
-    }
-
-    grid.innerHTML = filtered.map(p => {
-      const inCart = cart[p.id];
-      const em = emojiMap[p.category] || emojiMap.default;
-      return `
-        <div class="product-card">
-          <div class="product-img-wrap">
-            <img src="${p.image||''}" alt="${p.name}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" style="display:${p.image?'block':'none'};" />
-            <div class="product-emoji" style="display:${p.image?'none':'flex'};">${em}</div>
-          </div>
-          <div class="product-info">
-            <div class="product-category">${p.category}</div>
-            <div class="product-name">${p.name}</div>
-            <div class="product-footer">
-              <div class="product-price">₹${p.price}<span>/${L('unit','इकाई')}</span></div>
-              ${inCart 
-                ? `<div class="qty-ctrl"><button onclick="changeQty('${p.id}',-1)">−</button><span>${inCart.qty}</span><button onclick="changeQty('${p.id}',1)">+</button></div>`
-                : `<button class="add-btn" onclick="addToCart('${p.id}')">+</button>`}
-            </div>
-          </div>
-        </div>`;
-    }).join('');
+  currentUser = { uid: user.uid, ...userDoc.data() };
+  document.getElementById('userGreeting').textContent = `${L('Hi','नमस्ते')}, ${currentUser.name.split(' ')[0]}!`;
+  document.getElementById('profileName').textContent  = currentUser.name;
+  document.getElementById('profileEmail').textContent = currentUser.email;
+  document.getElementById('profilePhone').textContent = currentUser.phone || '';
+  if (currentUser.phone) {
+    document.getElementById('orderPhoneNum').value = currentUser.phone.replace(/^\+91/, '');
   }
+  loadProducts();
+  showPage('home');
+  hideSpinner();
+});
 
-  window.filterCategory = (cat, el) => {
-    currentCategory = cat;
-    document.querySelectorAll('.section-tab').forEach(t => t.classList.remove('active'));
-    el.classList.add('active');
+// ════════════════════════════════════
+// PAGE NAVIGATION
+// ════════════════════════════════════
+window.showPage = (page) => {
+  ['home','orders','profile'].forEach(p => {
+    document.getElementById(`page-${p}`).style.display = 'none';
+    document.getElementById(`nav-${p}`)?.classList.remove('active');
+  });
+  document.getElementById(`page-${page}`).style.display = 'block';
+  document.getElementById(`nav-${page}`)?.classList.add('active');
+  if (page === 'orders') loadOrders();
+};
+
+// ════════════════════════════════════
+// PRODUCTS — real-time listener
+// ════════════════════════════════════
+function loadProducts() {
+  onSnapshot(collection(db, 'products'), snap => {
+    allProducts = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     renderProducts();
-  };
+  });
+}
 
-  // ── CART FUNCTIONS ──
-  window.addToCart = (id) => {
-    const p = allProducts.find(x => x.id === id);
-    if (!p) return;
-    cart[id] = { ...p, qty: 1 };
-    updateBadge();
-    renderProducts();
-    toast(`${p.name} ${L('added!','जोड़ा!')}`, 'success');
-  };
+const EM = { milk:'🥛', curd:'🫙', butter:'🧈', cheese:'🧀', paneer:'🍱', ghee:'✨', default:'🛍️' };
 
-  window.changeQty = (id, d) => {
-    if (!cart[id]) return;
-    cart[id].qty += d;
-    if (cart[id].qty <= 0) delete cart[id];
-    updateBadge();
-    renderProducts();
-    if (document.getElementById('cartDrawer').classList.contains('show')) {
-      renderCartBody();
-    }
-  };
+function renderProducts() {
+  const grid = document.getElementById('productsGrid');
+  const list = currentCat === 'all' ? allProducts : allProducts.filter(p => p.category === currentCat);
+  document.getElementById('productCount').textContent = list.length + ' ' + L('items', 'उत्पाद');
 
-  function updateBadge() {
-    const n = Object.values(cart).reduce((s, i) => s + i.qty, 0);
-    const b = document.getElementById('cartBadge');
-    b.textContent = n;
-    b.style.display = n > 0 ? 'flex' : 'none';
+  if (!list.length) {
+    grid.innerHTML = `<div class="empty-state" style="grid-column:span 2;">
+      <div class="empty-icon">📦</div>
+      <h3>${L('No products found', 'कोई उत्पाद नहीं')}</h3>
+    </div>`;
+    return;
   }
 
-  window.openCart = () => {
-    if (!Object.keys(cart).length) {
-      toast(L('Cart is empty!','कार्ट खाली है!'), 'info');
-      return;
-    }
-    renderCartBody();
-    document.getElementById('cartDrawer').classList.add('show');
-    document.getElementById('overlay').classList.add('show');
-  };
+  grid.innerHTML = list.map(p => {
+    const icon = p.image || EM[p.category] || EM.default;
+    const isEmoji = [...icon].length <= 2;
+    const inCart  = cart[p.id];
+    const unitStr = p.unit ? `/${p.unit}` : `/${L('unit','इकाई')}`;
 
-  window.closeCart = () => {
-    document.getElementById('cartDrawer').classList.remove('show');
-    document.getElementById('overlay').classList.remove('show');
-  };
-
-  function renderCartBody() {
-    const items = Object.values(cart);
-    const total = items.reduce((s, i) => s + i.price * i.qty, 0);
-
-    document.getElementById('cartBody').innerHTML = items.map(item => {
-      const em = emojiMap[item.category] || emojiMap.default;
-      return `
-        <div class="cart-item">
-          <div class="cart-item-img">
-            <img src="${item.image||''}" onerror="this.style.display='none';this.parentElement.textContent='${em}';" style="display:${item.image?'block':'none'};" />
-            ${item.image ? '' : em}
-          </div>
-          <div class="cart-item-info">
-            <div class="cart-item-name">${item.name}</div>
-            <div class="cart-item-price">₹${item.price} × ${item.qty} = ₹${item.price*item.qty}</div>
-          </div>
-          <div class="qty-ctrl">
-            <button onclick="changeQty('${item.id}',-1)">−</button>
-            <span>${item.qty}</span>
-            <button onclick="changeQty('${item.id}',1)">+</button>
-          </div>
-        </div>`;
-    }).join('');
-
-    document.getElementById('cartTotal').textContent = `₹${total}`;
-  }
-
-  // ── GPS ──
-  window.getLocation = () => {
-    const btn = document.getElementById('gpsBtn');
-    if (!navigator.geolocation) {
-      toast(L('GPS not supported','GPS उपलब्ध नहीं'), 'error');
-      return;
-    }
-    btn.textContent = '⏳';
-    btn.disabled = true;
-
-    navigator.geolocation.getCurrentPosition(
-      async (pos) => {
-        const { latitude, longitude } = pos.coords;
-        try {
-          const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`);
-          const data = await res.json();
-          const address = data.display_name || `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
-          document.getElementById('deliveryAddress').value = address;
-          toast(L('Location fetched!','स्थान मिल गया!'), 'success');
-        } catch {
-          document.getElementById('deliveryAddress').value = `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`;
-          toast(L('Location set (coords)','स्थान सेट किया'), 'info');
+    return `<div class="product-card">
+      <div class="product-img-wrap">
+        ${isEmoji
+          ? `<div class="product-emoji">${icon}</div>`
+          : `<img src="${icon}" alt="${p.name}"
+               onerror="this.style.display='none';this.insertAdjacentHTML('afterend','<div class=\\'product-emoji\\'>${EM[p.category]||EM.default}</div>')">`
         }
-        btn.textContent = L('📡 GPS', '📡 जीपीएस');
-        btn.disabled = false;
-      },
-      () => {
-        toast(L('GPS denied. Enter address manually.','GPS अस्वीकृत। पता मैन्युअल डालें।'), 'error');
-        btn.textContent = L('📡 GPS', '📡 जीपीएस');
-        btn.disabled = false;
-      },
-      { enableHighAccuracy: true, timeout: 10000 }
-    );
-  };
+      </div>
+      <div class="product-info">
+        <div class="product-category">${p.category}</div>
+        <div class="product-name">${p.name}</div>
+        <div class="product-footer">
+          <div class="product-price">₹${p.price}<span>${unitStr}</span></div>
+          ${inCart
+            ? `<div class="qty-ctrl">
+                <button onclick="changeQty('${p.id}',-1)">−</button>
+                <span>${inCart.qty}</span>
+                <button onclick="changeQty('${p.id}',1)">+</button>
+               </div>`
+            : `<button class="add-btn" onclick="addToCart('${p.id}')">+</button>`
+          }
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
 
-  // ── PLACE ORDER ──
-  window.placeOrder = async () => {
-    const address = document.getElementById('deliveryAddress').value.trim();
-    const phoneNum = document.getElementById('orderPhoneNum').value.trim();
-    const phoneCode = document.getElementById('orderPhone').value.trim();
+window.filterCat = (cat, el) => {
+  currentCat = cat;
+  document.querySelectorAll('.section-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  renderProducts();
+};
 
-    if (!address) return toast(L('Enter delivery address','पता डालें'), 'error');
-    if (!phoneNum || phoneNum.length < 10) return toast(L('Enter valid mobile number','सही मोबाइल नंबर डालें'), 'error');
-    if (!Object.keys(cart).length) return toast(L('Cart is empty','कार्ट खाली है'), 'error');
+// ════════════════════════════════════
+// CART
+// ════════════════════════════════════
+window.addToCart = (id) => {
+  const p = allProducts.find(x => x.id === id);
+  if (!p) return;
+  cart[id] = { ...p, qty: 1 };
+  updateBadge(); renderProducts();
+  toast(`${p.name} ${L('added!','जोड़ा!')}`, 'success');
+};
 
-    showSpinner();
+window.changeQty = (id, delta) => {
+  if (!cart[id]) return;
+  cart[id].qty += delta;
+  if (cart[id].qty <= 0) delete cart[id];
+  updateBadge(); renderProducts();
+  if (document.getElementById('cartDrawer').classList.contains('show')) renderCartBody();
+};
 
-    try {
-      const items = Object.values(cart).map(i => ({ name: i.name, price: i.price, quantity: i.qty }));
-      const totalPrice = items.reduce((s, i) => s + i.price * i.quantity, 0);
+function updateBadge() {
+  const n = Object.values(cart).reduce((s, i) => s + i.qty, 0);
+  const b = document.getElementById('cartBadge');
+  b.textContent = n;
+  b.style.display = n > 0 ? 'flex' : 'none';
+}
 
-      await addDoc(collection(db, 'orders'), {
-        customerId: currentUser.uid,
-        customerName: currentUser.name,
-        customerPhone: phoneCode + phoneNum,
-        items,
-        totalPrice,
-        status: 'pending',
-        deliveryBoyId: null,
-        address,
-        timestamp: serverTimestamp()
-      });
+window.openCart = () => {
+  if (!Object.keys(cart).length) { toast(L('Cart is empty! Add products.','कार्ट खाली है! उत्पाद जोड़ें।'), 'info'); return; }
+  renderCartBody();
+  document.getElementById('cartDrawer').classList.add('show');
+  document.getElementById('overlay').classList.add('show');
+};
+window.closeCart = () => {
+  document.getElementById('cartDrawer').classList.remove('show');
+  document.getElementById('overlay').classList.remove('show');
+};
 
-      cart = {};
-      updateBadge();
-      closeCart();
-      document.getElementById('deliveryAddress').value = '';
-      renderProducts();
+function renderCartBody() {
+  const items = Object.values(cart);
+  const total = items.reduce((s, i) => s + i.price * i.qty, 0);
 
-      hideSpinner();
-      toast(L('🎉 Order placed!','🎉 ऑर्डर दिया गया!'), 'success');
-      setTimeout(() => showPage('orders'), 1200);
-    } catch (err) {
-      hideSpinner();
-      toast(L('Order failed: ','ऑर्डर विफल: ') + err.message, 'error');
-    }
-  };
+  document.getElementById('cartBody').innerHTML = items.map(item => {
+    const icon = item.image || EM[item.category] || EM.default;
+    const isEmoji = [...icon].length <= 2;
+    return `<div class="cart-item">
+      <div class="cart-item-img">
+        ${isEmoji ? icon : `<img src="${icon}" onerror="this.parentElement.textContent='${EM[item.category]||EM.default}'">`}
+      </div>
+      <div class="cart-item-info">
+        <div class="cart-item-name">${item.name}</div>
+        <div class="cart-item-price">₹${item.price}${item.unit ? '/'+item.unit : ''} × ${item.qty} = <strong>₹${item.price * item.qty}</strong></div>
+      </div>
+      <div class="qty-ctrl">
+        <button onclick="changeQty('${item.id}',-1)">−</button>
+        <span>${item.qty}</span>
+        <button onclick="changeQty('${item.id}',1)">+</button>
+      </div>
+    </div>`;
+  }).join('');
 
-  // ── ORDERS ──
-  function loadOrders() {
-    if (!currentUser) return;
-    const q = query(collection(db, 'orders'), 
-      where('customerId', '==', currentUser.uid), 
-      orderBy('timestamp', 'desc')
-    );
-    onSnapshot(q, snap => {
-      renderOrders(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+  document.getElementById('cartTotal').textContent = `₹${total}`;
+}
+
+// ════════════════════════════════════
+// GPS LOCATION
+// ════════════════════════════════════
+window.getLocation = () => {
+  const btn = document.getElementById('gpsBtn');
+  const lang = localStorage.getItem('rd_lang');
+  if (!navigator.geolocation) { toast(L('GPS not supported','GPS उपलब्ध नहीं'), 'error'); return; }
+  btn.textContent = '⏳';
+  btn.disabled = true;
+  navigator.geolocation.getCurrentPosition(
+    async ({ coords: { latitude, longitude } }) => {
+      try {
+        const res  = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`);
+        const data = await res.json();
+        document.getElementById('deliveryAddress').value = data.display_name || `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
+        toast(L('Location fetched! ✅','स्थान मिल गया! ✅'), 'success');
+      } catch {
+        document.getElementById('deliveryAddress').value = `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`;
+        toast(L('Location set (coordinates)','स्थान सेट किया (निर्देशांक)'), 'info');
+      }
+      btn.textContent = lang === 'hi' ? '📡 जीपीएस' : '📡 GPS';
+      btn.disabled = false;
+    },
+    () => {
+      toast(L('GPS access denied. Enter address manually.','GPS अस्वीकृत। पता मैन्युअल डालें।'), 'error');
+      btn.textContent = lang === 'hi' ? '📡 जीपीएस' : '📡 GPS';
+      btn.disabled = false;
+    },
+    { enableHighAccuracy: true, timeout: 10000 }
+  );
+};
+
+// ════════════════════════════════════
+// PLACE ORDER
+// ════════════════════════════════════
+window.placeOrder = async () => {
+  const address  = document.getElementById('deliveryAddress').value.trim();
+  const phoneNum = document.getElementById('orderPhoneNum').value.trim();
+  const phoneCode= document.getElementById('orderPhone').value.trim();
+
+  if (!address)                       { toast(L('Enter delivery address','डिलीवरी पता डालें'), 'error'); return; }
+  if (!/^\d{10}$/.test(phoneNum))     { toast(L('Enter valid 10-digit number','सही 10 अंकों का नंबर डालें'), 'error'); return; }
+  if (!Object.keys(cart).length)      { toast(L('Cart is empty','कार्ट खाली है'), 'error'); return; }
+
+  showSpinner();
+  try {
+    const items = Object.values(cart).map(i => ({
+      name: i.name, price: i.price, quantity: i.qty, unit: i.unit || ''
+    }));
+    const totalPrice = items.reduce((s, i) => s + i.price * i.quantity, 0);
+
+    await addDoc(collection(db, 'orders'), {
+      customerId:    currentUser.uid,
+      customerName:  currentUser.name,
+      customerPhone: phoneCode + phoneNum,
+      items, totalPrice,
+      status:        'pending',
+      deliveryBoyId: null,
+      address,
+      timestamp:     serverTimestamp()
     });
+
+    // Clear cart
+    cart = {};
+    updateBadge();
+    closeCart();
+    document.getElementById('deliveryAddress').value = '';
+    renderProducts();
+    hideSpinner();
+    toast(L('🎉 Order placed successfully!','🎉 ऑर्डर सफलतापूर्वक दिया गया!'), 'success');
+    setTimeout(() => showPage('orders'), 1200);
+  } catch (err) {
+    hideSpinner();
+    toast(L('Order failed: ', 'ऑर्डर विफल: ') + err.message, 'error');
+  }
+};
+
+// ════════════════════════════════════
+// ORDERS — real-time listener
+// ════════════════════════════════════
+let ordersUnsubscribe = null;
+function loadOrders() {
+  if (ordersUnsubscribe) ordersUnsubscribe();
+  const q = query(collection(db, 'orders'), where('customerId', '==', currentUser.uid));
+  ordersUnsubscribe = onSnapshot(q, snap => {
+    const orders = snap.docs
+      .map(d => ({ id: d.id, ...d.data() }))
+      .sort((a, b) => {
+        const ta = a.timestamp?.toMillis ? a.timestamp.toMillis() : 0;
+        const tb = b.timestamp?.toMillis ? b.timestamp.toMillis() : 0;
+        return tb - ta;
+      });
+    renderOrders(orders);
+    document.getElementById('orderCountBadge').textContent = orders.length;
+  });
+}
+
+function renderOrders(orders) {
+  const list = document.getElementById('ordersList');
+  if (!orders.length) {
+    list.innerHTML = `<div class="empty-state">
+      <div class="empty-icon">📭</div>
+      <h3>${L('No orders yet','अभी कोई ऑर्डर नहीं')}</h3>
+      <p>${L('Start shopping to see your orders!','शॉपिंग करें!')}</p>
+    </div>`;
+    return;
   }
 
-  function renderOrders(orders) {
-    const list = document.getElementById('ordersList');
-    if (!orders.length) {
-      list.innerHTML = `<div class="empty-state">
-        <div class="empty-icon">📭</div>
-        <h3>${L('No orders yet','अभी कोई ऑर्डर नहीं')}</h3>
-        <p>${L('Start shopping!','शॉपिंग शुरू करें!')}</p>
-      </div>`;
-      return;
-    }
-
-    const statusL = { pending: L('Pending','पेंडिंग'), assigned: L('Out for Delivery','डिलीवरी पर'), delivered: L('Delivered','डिलीवर') };
-    const statusC = { pending:'status-pending', assigned:'status-assigned', delivered:'status-delivered' };
-    const stepNames = [L('Placed','दिया'), L('Dispatched','भेजा'), L('Delivered','मिला')];
-    const statusOrd = { pending:0, assigned:1, delivered:2 };
-
-    list.innerHTML = orders.map(o => {
-      const date = o.timestamp?.toDate ? o.timestamp.toDate().toLocaleString('en-IN') : L('Just now','अभी');
-      const cur = statusOrd[o.status] || 0;
-      const tracker = stepNames.map((s, i) => `
-        <div class="tracker-step ${i < cur ? 'done' : i === cur ? 'active' : ''}">
-          <div class="tracker-dot">${i < cur ? '✓' : i + 1}</div>
-          <div class="tracker-label">${s}</div>
-        </div>`).join('');
-
-      return `
-        <div class="order-card">
-          <div class="order-header">
-            <div>
-              <div class="order-id">#${o.id.slice(-6).toUpperCase()}</div>
-              <div class="order-date">${date}</div>
-            </div>
-            <span class="status-badge ${statusC[o.status]}">${statusL[o.status]}</span>
-          </div>
-          <div class="order-tracker">${tracker}</div>
-          <div class="order-items">${o.items.map(i => `<div class="order-item-line">• ${i.name} × ${i.quantity} = ₹${i.price*i.quantity}</div>`).join('')}</div>
-          ${o.customerPhone ? `<div style="font-size:0.78rem;color:var(--text-light);margin-bottom:6px;">📱 ${o.customerPhone}</div>` : ''}
-          <div class="order-address">📍 ${o.address}</div>
-          <div class="order-footer"><span class="order-total">${L('Total','कुल')}: ₹${o.totalPrice}</span></div>
-        </div>`;
-    }).join('');
-  }
-
-  // ── LOGOUT ──
-  window.handleLogout = async () => {
-    await signOut(auth);
-    window.location.href = 'login.html';
+  const statusLbl = {
+    pending:   L('⏳ Pending',  '⏳ पेंडिंग'),
+    assigned:  L('🚴 On the way','🚴 रास्ते में'),
+    delivered: L('✅ Delivered', '✅ डिलीवर')
   };
+  const statusCls = { pending:'status-pending', assigned:'status-assigned', delivered:'status-delivered' };
+  const stepNames  = [L('Placed','दिया'), L('Dispatched','भेजा'), L('Delivered','मिला')];
+  const statusOrd  = { pending:0, assigned:1, delivered:2 };
 
-  // ── TOAST & SPINNER ──
-  window.toast = (msg, type = 'info') => {
-    const c = document.getElementById('toast-container');
-    const el = document.createElement('div');
-    el.className = `toast ${type}`;
-    el.innerHTML = `<span>${{success:'✅',error:'❌',info:'ℹ️'}[type] || ''}</span> ${msg}`;
-    c.appendChild(el);
-    setTimeout(() => {
-      el.style.animation = 'toastOut .3s ease forwards';
-      setTimeout(() => el.remove(), 300);
-    }, 3000);
-  };
+  list.innerHTML = orders.map(o => {
+    const date = o.timestamp?.toDate ? o.timestamp.toDate().toLocaleString('en-IN') : L('Just now','अभी');
+    const cur  = statusOrd[o.status] || 0;
+    const tracker = stepNames.map((s, i) => `
+      <div class="tracker-step ${i < cur ? 'done' : i === cur ? 'active' : ''}">
+        <div class="tracker-dot">${i < cur ? '✓' : i + 1}</div>
+        <div class="tracker-label">${s}</div>
+      </div>`).join('');
 
-  window.showSpinner = () => document.getElementById('spinner').classList.add('show');
-  window.hideSpinner = () => document.getElementById('spinner').classList.remove('show');
+    return `<div class="order-card">
+      <div class="order-header">
+        <div>
+          <div class="order-id">#${o.id.slice(-6).toUpperCase()}</div>
+          <div class="order-date">${date}</div>
+        </div>
+        <span class="status-badge ${statusCls[o.status]}">${statusLbl[o.status]||o.status}</span>
+      </div>
+      <div class="order-tracker">${tracker}</div>
+      <div class="order-items">
+        ${o.items.map(i =>
+          `<div class="order-item-line">• ${i.name}${i.unit ? ' ('+i.unit+')' : ''} × ${i.quantity} = ₹${i.price * i.quantity}</div>`
+        ).join('')}
+      </div>
+      ${o.customerPhone ? `<div style="font-size:.75rem;color:var(--text-light);margin-bottom:5px;">📱 ${o.customerPhone}</div>` : ''}
+      <div class="order-address">📍 ${o.address}</div>
+      <div class="order-footer">
+        <span class="order-total">${L('Total','कुल')}: ₹${o.totalPrice}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ════════════════════════════════════
+// LOGOUT
+// ════════════════════════════════════
+window.handleLogout = async () => {
+  if (ordersUnsubscribe) ordersUnsubscribe();
+  await signOut(auth);
+  window.location.href = 'login.html';
+};
+
+// ════════════════════════════════════
+// TOAST & SPINNER
+// ════════════════════════════════════
+window.toast = (msg, type = 'info') => {
+  const c  = document.getElementById('toast-container');
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.innerHTML = `<span>${{success:'✅',error:'❌',info:'ℹ️'}[type]||''}</span> ${msg}`;
+  c.appendChild(el);
+  setTimeout(() => {
+    el.style.animation = 'toastOut .3s ease forwards';
+    setTimeout(() => el.remove(), 300);
+  }, 3000);
+};
+window.showSpinner = () => document.getElementById('spinner').classList.add('show');
+window.hideSpinner = () => document.getElementById('spinner').classList.remove('show');
 </script>
 </body>
 </html>
