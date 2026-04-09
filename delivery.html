@@ -1,27 +1,25 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="light" data-lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Radhika Dairy – Delivery</title>
-  <meta name="theme-color" content="#c62828" id="themeColorMeta" />
-  <link rel="manifest" href="manifest.json" />
-  <link rel="stylesheet" href="style.css" />
-  <style>
-    .delivery-order-card { background:var(--bg-card); border-radius:var(--radius); padding:15px; box-shadow:var(--shadow); border-left:4px solid var(--primary); margin-bottom:11px; }
-    .delivery-order-card.done { border-left-color:var(--accent); opacity:0.72; }
-    .cust-row { display:flex; align-items:center; gap:10px; margin-bottom:9px; }
-    .cust-avatar { width:38px; height:38px; border-radius:50%; background:var(--primary-light); display:flex; align-items:center; justify-content:center; font-size:1.1rem; flex-shrink:0; }
-    .filter-tabs { display:flex; gap:7px; padding:0 14px 11px; }
-    .filter-tab { padding:6px 15px; border-radius:20px; font-size:0.8rem; font-weight:700; border:2px solid var(--border); background:transparent; color:var(--text-mid); cursor:pointer; transition:all .2s; font-family:var(--font); }
-    .filter-tab.active { background:var(--primary); color:#fff; border-color:var(--primary); }
-  </style>
+  <meta name="theme-color" content="#c62828" id="themeColorMeta"/>
+  <link rel="manifest" href="manifest.json"/>
+  <link rel="stylesheet" href="style.css"/>
+  <script>
+    const _t = localStorage.getItem('rd_theme') || 'light';
+    document.documentElement.setAttribute('data-theme', _t);
+  </script>
 </head>
 <body>
 
-<div class="spinner-overlay show" id="spinner"><div class="spinner"></div><div class="spinner-text" id="spinnerText">Loading...</div></div>
+<div class="spinner-overlay show" id="spinner">
+  <div class="spinner"></div>
+  <div class="spinner-text" id="spinnerText">Loading...</div>
+</div>
 
-<!-- Utility Bar -->
+<!-- ══════════════ UTILITY BAR ══════════════ -->
 <div class="util-bar">
   <div class="util-left">
     <button class="util-btn active" id="btnEN" onclick="setLang('en')">EN</button>
@@ -32,168 +30,317 @@
   </div>
 </div>
 
-<!-- Top Nav -->
+<!-- ══════════════ TOP NAV ══════════════ -->
 <nav class="top-nav">
   <div class="brand">🚴 <span id="deliveryName">Delivery</span></div>
-  <button onclick="handleLogout()" style="background:var(--danger-light);color:var(--danger);padding:7px 12px;border-radius:8px;font-size:0.8rem;font-weight:700;" id="logoutBtn" data-en="Logout" data-hi="लॉगआउट">Logout</button>
+  <button onclick="handleLogout()"
+    style="background:var(--danger-light);color:var(--danger);padding:7px 12px;border-radius:8px;font-size:.8rem;font-weight:700;"
+    id="logoutBtn" data-en="Logout" data-hi="लॉगआउट">Logout</button>
 </nav>
 
+<!-- ══════════════ MAIN CONTENT ══════════════ -->
 <div class="page-content no-bottom-nav">
+
+  <!-- Header -->
   <div class="delivery-header">
     <h2 data-en="Delivery Dashboard" data-hi="डिलीवरी डैशबोर्ड">Delivery Dashboard</h2>
-    <p id="deliverySubtitle" data-en="Manage your deliveries" data-hi="अपनी डिलीवरी प्रबंधित करें">Manage your deliveries</p>
+    <p style="font-size:.83rem;opacity:.75;margin-top:3px;"
+       data-en="Manage and complete your assigned orders"
+       data-hi="असाइन किए गए ऑर्डर पूरे करें">Manage and complete your assigned orders</p>
   </div>
 
+  <!-- Stats -->
   <div class="stats-row">
-    <div class="stat-mini"><div class="stat-value" id="statA">0</div><div class="stat-label" data-en="Assigned" data-hi="असाइन">Assigned</div></div>
-    <div class="stat-mini"><div class="stat-value" id="statD">0</div><div class="stat-label" data-en="Delivered" data-hi="डिलीवर">Delivered</div></div>
-    <div class="stat-mini"><div class="stat-value" id="statT">0</div><div class="stat-label" data-en="Today" data-hi="आज">Today</div></div>
+    <div class="stat-mini">
+      <div class="stat-value" id="statA">0</div>
+      <div class="stat-label" data-en="Active" data-hi="सक्रिय">Active</div>
+    </div>
+    <div class="stat-mini">
+      <div class="stat-value" id="statD">0</div>
+      <div class="stat-label" data-en="Delivered" data-hi="डिलीवर">Delivered</div>
+    </div>
+    <div class="stat-mini">
+      <div class="stat-value" id="statT">0</div>
+      <div class="stat-label" data-en="Today" data-hi="आज">Today</div>
+    </div>
   </div>
 
+  <!-- Filter tabs -->
   <div class="filter-tabs">
-    <button class="filter-tab active" onclick="setFilter('assigned',this)" id="ft-assigned" data-en="🔵 Active" data-hi="🔵 सक्रिय">🔵 Active</button>
-    <button class="filter-tab" onclick="setFilter('delivered',this)" id="ft-delivered" data-en="✅ Delivered" data-hi="✅ डिलीवर">✅ Delivered</button>
-    <button class="filter-tab" onclick="setFilter('all',this)" id="ft-all" data-en="📋 All" data-hi="📋 सभी">📋 All</button>
+    <button class="filter-tab active" onclick="setFilter('assigned',this)"
+      data-en="🔵 Active" data-hi="🔵 सक्रिय">🔵 Active</button>
+    <button class="filter-tab" onclick="setFilter('delivered',this)"
+      data-en="✅ Done" data-hi="✅ हो गया">✅ Done</button>
+    <button class="filter-tab" onclick="setFilter('all',this)"
+      data-en="📋 All" data-hi="📋 सभी">📋 All</button>
   </div>
 
-  <div class="section-header">
+  <!-- List header -->
+  <div class="section-header" style="padding-bottom:6px;">
     <h2 id="filterTitle" data-en="Active Orders" data-hi="सक्रिय ऑर्डर">Active Orders</h2>
+    <span class="badge badge-primary" id="listCount">0</span>
   </div>
-  <div style="padding:0 14px;" id="ordList"></div>
-  <div style="height:20px;"></div>
+
+  <!-- Orders list -->
+  <div style="padding:0 14px 24px;" id="ordList">
+    <div class="empty-state">
+      <div class="empty-icon">⏳</div>
+      <h3 data-en="Loading orders..." data-hi="ऑर्डर लोड हो रहे हैं...">Loading orders...</h3>
+    </div>
+  </div>
 </div>
 
-<div id="toast-container" style="bottom:20px !important;"></div>
+<div id="toast-container" style="bottom:20px;"></div>
 
 <script type="module">
-  import { auth, db } from './firebase-config.js';
-  import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-  import { collection, doc, getDoc, query, where, onSnapshot, updateDoc, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { auth, db } from './firebase-config.js';
+import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import {
+  collection, doc, getDoc, query, where, onSnapshot, updateDoc
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-  // ── THEME ──
-  const st = localStorage.getItem('rd_theme') || 'light';
-  applyTheme(st);
-  function applyTheme(t) {
-    document.documentElement.setAttribute('data-theme', t);
-    document.getElementById('themeColorMeta').content = t === 'dark' ? '#8e0000' : '#c62828';
-    document.getElementById('btnTheme').textContent = t === 'dark' ? '☀️' : '🌙';
-    localStorage.setItem('rd_theme', t);
-  }
-  window.toggleTheme = () => applyTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+// ─── THEME ───
+const st = localStorage.getItem('rd_theme') || 'light';
+applyTheme(st);
+function applyTheme(t) {
+  document.documentElement.setAttribute('data-theme', t);
+  document.getElementById('themeColorMeta').content = t === 'dark' ? '#8e0000' : '#c62828';
+  document.getElementById('btnTheme').textContent   = t === 'dark' ? '☀️' : '🌙';
+  localStorage.setItem('rd_theme', t);
+}
+window.toggleTheme = () =>
+  applyTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
 
-  // ── LANGUAGE ──
-  const sl = localStorage.getItem('rd_lang') || 'en';
-  applyLang(sl);
-  function applyLang(lang) {
-    localStorage.setItem('rd_lang', lang);
-    document.getElementById('btnEN').classList.toggle('active', lang === 'en');
-    document.getElementById('btnHI').classList.toggle('active', lang === 'hi');
-    document.querySelectorAll('[data-en]').forEach(el => { el.textContent = lang === 'hi' ? (el.dataset.hi||el.dataset.en) : el.dataset.en; });
-    document.getElementById('spinnerText').textContent = lang === 'hi' ? 'लोड हो रहा है...' : 'Loading...';
-  }
-  window.setLang = (lang) => { applyLang(lang); renderOrders(); };
-  function L(en, hi) { return localStorage.getItem('rd_lang') === 'hi' ? hi : en; }
-
-  let currentUser = null, allOrders = [], filterMode = 'assigned';
-
-  // ── AUTH ──
-  onAuthStateChanged(auth, async (user) => {
-    if (!user) { window.location.href = 'login.html'; return; }
-    const d = await getDoc(doc(db, 'users', user.uid));
-    if (!d.exists() || d.data().role !== 'delivery') { await signOut(auth); window.location.href = 'login.html'; return; }
-    currentUser = { uid: user.uid, ...d.data() };
-    document.getElementById('deliveryName').textContent = currentUser.name;
-    document.getElementById('spinner').classList.remove('show');
-    loadOrders();
+// ─── LANGUAGE ───
+const sl = localStorage.getItem('rd_lang') || 'en';
+applyLang(sl);
+function applyLang(lang) {
+  localStorage.setItem('rd_lang', lang);
+  document.getElementById('btnEN').classList.toggle('active', lang === 'en');
+  document.getElementById('btnHI').classList.toggle('active', lang === 'hi');
+  document.querySelectorAll('[data-en]').forEach(el => {
+    el.textContent = lang === 'hi' ? (el.dataset.hi || el.dataset.en) : el.dataset.en;
   });
+  document.getElementById('spinnerText').textContent = lang === 'hi' ? 'लोड हो रहा है...' : 'Loading...';
+}
+window.setLang = (lang) => { applyLang(lang); renderOrders(); };
+function L(en, hi) { return localStorage.getItem('rd_lang') === 'hi' ? hi : en; }
 
-  function loadOrders() {
-    const q = query(collection(db,'orders'), where('deliveryBoyId','==',currentUser.uid), orderBy('timestamp','desc'));
-    onSnapshot(q, snap => {
-      allOrders = snap.docs.map(d => ({ id:d.id,...d.data() }));
-      updateStats(); renderOrders();
-    });
+// ─── STATE ───
+let currentUser = null;
+let allOrders   = [];
+let filterMode  = 'assigned';
+
+// ─── AUTH ───
+onAuthStateChanged(auth, async (user) => {
+  if (!user) { window.location.href = 'login.html'; return; }
+  const d = await getDoc(doc(db, 'users', user.uid));
+  if (!d.exists() || d.data().role !== 'delivery') {
+    await signOut(auth); window.location.href = 'login.html'; return;
   }
+  currentUser = { uid: user.uid, ...d.data() };
+  document.getElementById('deliveryName').textContent = currentUser.name;
+  hideSpinner();
+  loadOrders();
+});
 
-  function updateStats() {
-    const a = allOrders.filter(o => o.status==='assigned').length;
-    const d = allOrders.filter(o => o.status==='delivered').length;
-    const today = new Date(); today.setHours(0,0,0,0);
-    const t = allOrders.filter(o => o.status==='delivered' && o.timestamp?.toDate && o.timestamp.toDate() >= today).length;
-    document.getElementById('statA').textContent = a;
-    document.getElementById('statD').textContent = d;
-    document.getElementById('statT').textContent = t;
-  }
+// ─── LOAD ORDERS ───
+// ✅ KEY FIX: Simple where() only — NO orderBy — avoids composite index error in Firestore.
+// We sort client-side instead. No need to create any Firestore index.
+function loadOrders() {
+  const q = query(
+    collection(db, 'orders'),
+    where('deliveryBoyId', '==', currentUser.uid)
+  );
 
-  window.setFilter = (mode, el) => {
-    filterMode = mode;
-    document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
-    el.classList.add('active');
-    const lang = localStorage.getItem('rd_lang');
-    const titles = {
-      assigned: L('Active Orders','सक्रिय ऑर्डर'),
-      delivered: L('Delivered Orders','डिलीवर ऑर्डर'),
-      all: L('All Orders','सभी ऑर्डर')
-    };
-    document.getElementById('filterTitle').textContent = titles[mode];
+  onSnapshot(q, snap => {
+    allOrders = snap.docs
+      .map(d => ({ id: d.id, ...d.data() }))
+      .sort((a, b) => {
+        // Sort: pending/assigned first, then by newest timestamp
+        const statusPriority = { assigned: 0, pending: 1, delivered: 2 };
+        const pa = statusPriority[a.status] ?? 1;
+        const pb = statusPriority[b.status] ?? 1;
+        if (pa !== pb) return pa - pb;
+        const ta = a.timestamp?.toMillis ? a.timestamp.toMillis() : 0;
+        const tb = b.timestamp?.toMillis ? b.timestamp.toMillis() : 0;
+        return tb - ta;
+      });
+
+    updateStats();
     renderOrders();
-  };
+  });
+}
 
-  function renderOrders() {
-    const c = document.getElementById('ordList');
-    const filtered = filterMode === 'all' ? allOrders : allOrders.filter(o => o.status === filterMode);
-    if (!filtered.length) {
-      c.innerHTML = `<div class="empty-state"><div class="empty-icon">${filterMode==='assigned'?'🎉':'📭'}</div><h3>${filterMode==='assigned'?L('All caught up!','सब हो गया!'):L('No orders','कोई ऑर्डर नहीं')}</h3></div>`;
-      return;
-    }
-    c.innerHTML = filtered.map(o => {
-      const date = o.timestamp?.toDate ? o.timestamp.toDate().toLocaleString('en-IN') : L('Just now','अभी');
-      const done = o.status === 'delivered';
-      return `<div class="delivery-order-card ${done?'done':''}">
-        <div class="cust-row">
-          <div class="cust-avatar">👤</div>
-          <div style="flex:1;">
-            <div style="font-weight:700;font-size:0.92rem;">${o.customerName||'Customer'}</div>
-            <div style="font-size:0.75rem;color:var(--text-light);">${date}</div>
-          </div>
-          <span class="status-badge ${done?'status-delivered':'status-assigned'}">${done?L('✅ Done','✅ डिलीवर'):L('🚴 Active','🚴 सक्रिय')}</span>
-        </div>
-        <div class="order-id" style="margin-bottom:7px;">#${o.id.slice(-6).toUpperCase()}</div>
-        ${o.customerPhone ? `<div style="font-size:0.82rem;color:var(--text-mid);margin-bottom:7px;">📱 ${o.customerPhone}</div>` : ''}
-        <div style="background:var(--bg);padding:9px;border-radius:8px;margin-bottom:9px;">
-          ${o.items.map(i=>`<div class="order-item-line">• ${i.name} × ${i.quantity} = ₹${i.price*i.quantity}</div>`).join('')}
-        </div>
-        <div style="font-size:0.83rem;color:var(--text-mid);margin-bottom:10px;">📍 ${o.address}</div>
-        <div class="flex-between" style="${done?'':'margin-bottom:10px'};">
-          <strong>${L('Total','कुल')}: ₹${o.totalPrice}</strong>
-        </div>
-        ${!done ? `<button class="btn btn-success" style="width:100%;" onclick="markDelivered('${o.id}')">✅ ${L('Mark as Delivered','डिलीवर मार्क करें')}</button>` : ''}
-      </div>`;
-    }).join('');
+// ─── STATS ───
+function updateStats() {
+  const active    = allOrders.filter(o => o.status === 'assigned').length;
+  const delivered = allOrders.filter(o => o.status === 'delivered').length;
+  const today     = new Date(); today.setHours(0, 0, 0, 0);
+  const todayDone = allOrders.filter(o =>
+    o.status === 'delivered' &&
+    o.timestamp?.toDate &&
+    o.timestamp.toDate() >= today
+  ).length;
+
+  document.getElementById('statA').textContent = active;
+  document.getElementById('statD').textContent = delivered;
+  document.getElementById('statT').textContent = todayDone;
+}
+
+// ─── FILTER ───
+window.setFilter = (mode, el) => {
+  filterMode = mode;
+  document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  const lang = localStorage.getItem('rd_lang');
+  const titles = {
+    assigned: L('Active Orders',    'सक्रिय ऑर्डर'),
+    delivered:L('Delivered Orders', 'डिलीवर ऑर्डर'),
+    all:      L('All Orders',       'सभी ऑर्डर')
+  };
+  document.getElementById('filterTitle').textContent = titles[mode];
+  renderOrders();
+};
+
+// ─── RENDER ORDERS ───
+function renderOrders() {
+  const c        = document.getElementById('ordList');
+  const filtered = filterMode === 'all'
+    ? allOrders
+    : allOrders.filter(o => o.status === filterMode);
+
+  document.getElementById('listCount').textContent = filtered.length;
+
+  if (!filtered.length) {
+    c.innerHTML = `<div class="empty-state">
+      <div class="empty-icon">${filterMode === 'assigned' ? '🎉' : '📭'}</div>
+      <h3>${filterMode === 'assigned'
+          ? L('No active orders right now!', 'अभी कोई सक्रिय ऑर्डर नहीं!')
+          : L('No orders found', 'कोई ऑर्डर नहीं')
+      }</h3>
+      <p>${filterMode === 'assigned'
+          ? L('All caught up! New orders will appear here.', 'सब हो गया! नए ऑर्डर यहाँ दिखेंगे।')
+          : L('Try a different filter', 'दूसरा फ़िल्टर चुनें')
+      }</p>
+    </div>`;
+    return;
   }
 
-  window.markDelivered = async (id) => {
-    if (!confirm(L('Mark as delivered?','डिलीवर मार्क करें?'))) return;
-    showSpinner();
-    try {
-      await updateDoc(doc(db,'orders',id), { status:'delivered' });
-      hideSpinner();
-      toast(L('Marked as delivered! 🎉','डिलीवर हो गया! 🎉'), 'success');
-    } catch(e) { hideSpinner(); toast(e.message, 'error'); }
-  };
+  c.innerHTML = filtered.map(o => {
+    const date   = o.timestamp?.toDate
+      ? o.timestamp.toDate().toLocaleString('en-IN')
+      : L('Just now', 'अभी');
+    const done   = o.status === 'delivered';
 
-  window.handleLogout = async () => { await signOut(auth); window.location.href = 'login.html'; };
+    return `<div class="delivery-card ${done ? 'done' : ''}">
 
-  window.toast = (msg, type='info') => {
-    const c = document.getElementById('toast-container');
-    const el = document.createElement('div');
-    el.className = `toast ${type}`;
-    el.innerHTML = `<span>${{success:'✅',error:'❌',info:'ℹ️'}[type]||''}</span> ${msg}`;
-    c.appendChild(el);
-    setTimeout(() => { el.style.animation = 'toastOut .3s ease forwards'; setTimeout(() => el.remove(), 300); }, 3000);
-  };
-  window.showSpinner = () => document.getElementById('spinner').classList.add('show');
-  window.hideSpinner = () => document.getElementById('spinner').classList.remove('show');
+      <!-- Customer header row -->
+      <div class="cust-row">
+        <div class="cust-avatar">👤</div>
+        <div style="flex:1;">
+          <div style="font-weight:800;font-size:.95rem;">${o.customerName || 'Customer'}</div>
+          <div style="font-size:.72rem;color:var(--text-light);">${date}</div>
+        </div>
+        <span class="status-badge ${done ? 'status-delivered' : 'status-assigned'}">
+          ${done ? L('✅ Delivered', '✅ डिलीवर') : L('🚴 Active', '🚴 सक्रिय')}
+        </span>
+      </div>
+
+      <!-- Order ID -->
+      <div style="font-size:.78rem;font-weight:700;color:var(--text-light);margin-bottom:8px;">
+        ${L('Order', 'ऑर्डर')} #${o.id.slice(-6).toUpperCase()}
+      </div>
+
+      <!-- Customer phone -->
+      ${o.customerPhone ? `
+      <div style="display:flex;align-items:center;gap:7px;background:var(--primary-light);
+                  padding:8px 12px;border-radius:8px;margin-bottom:10px;">
+        <span style="font-size:1.1rem;">📱</span>
+        <div>
+          <div style="font-size:.7rem;font-weight:700;color:var(--primary);text-transform:uppercase;">
+            ${L('Customer Phone','ग्राहक फ़ोन')}
+          </div>
+          <div style="font-size:.95rem;font-weight:800;">${o.customerPhone}</div>
+        </div>
+      </div>` : ''}
+
+      <!-- Items -->
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:10px;">
+        <div style="font-size:.68rem;font-weight:800;color:var(--text-light);text-transform:uppercase;margin-bottom:7px;letter-spacing:.4px;">
+          ${L('Order Items', 'ऑर्डर आइटम')}
+        </div>
+        ${(o.items || []).map(i => `
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid var(--border);">
+            <span style="font-size:.85rem;">
+              ${i.name}${i.unit ? ` <span style="font-size:.7rem;color:var(--text-light);">(${i.unit})</span>` : ''}
+            </span>
+            <span style="font-size:.85rem;font-weight:700;color:var(--primary);">
+              ×${i.quantity} = ₹${i.price * i.quantity}
+            </span>
+          </div>`).join('')}
+        <div style="display:flex;justify-content:space-between;padding-top:7px;font-weight:800;">
+          <span>${L('Total','कुल')}</span>
+          <span style="color:var(--primary);">₹${o.totalPrice}</span>
+        </div>
+      </div>
+
+      <!-- Delivery address -->
+      <div style="display:flex;gap:7px;align-items:flex-start;margin-bottom:${done ? '0' : '12px'};
+                  background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:9px 12px;">
+        <span style="font-size:1rem;flex-shrink:0;">📍</span>
+        <div>
+          <div style="font-size:.68rem;font-weight:800;color:var(--text-light);text-transform:uppercase;margin-bottom:3px;">
+            ${L('Delivery Address','डिलीवरी पता')}
+          </div>
+          <div style="font-size:.85rem;line-height:1.4;">${o.address}</div>
+        </div>
+      </div>
+
+      <!-- Mark Delivered button (only for active orders) -->
+      ${!done ? `
+      <button class="btn btn-success" style="width:100%;padding:13px;font-size:1rem;margin-top:2px;"
+        onclick="markDelivered('${o.id}')">
+        ✅ ${L('Mark as Delivered', 'डिलीवर हो गया मार्क करें')}
+      </button>` : `
+      <div style="text-align:center;color:var(--accent);font-weight:800;font-size:.9rem;padding-top:8px;">
+        ✅ ${L('Order Delivered Successfully!', 'ऑर्डर सफलतापूर्वक डिलीवर हुआ!')}
+      </div>`}
+    </div>`;
+  }).join('');
+}
+
+// ─── MARK DELIVERED ───
+window.markDelivered = async (id) => {
+  if (!confirm(L('Mark this order as delivered?', 'इस ऑर्डर को डिलीवर मार्क करें?'))) return;
+  showSpinner();
+  try {
+    await updateDoc(doc(db, 'orders', id), { status: 'delivered' });
+    hideSpinner();
+    toast(L('Order marked as delivered! 🎉', 'ऑर्डर डिलीवर हो गया! 🎉'), 'success');
+  } catch (e) {
+    hideSpinner();
+    toast(e.message, 'error');
+  }
+};
+
+// ─── LOGOUT ───
+window.handleLogout = async () => { await signOut(auth); window.location.href = 'login.html'; };
+
+// ─── TOAST & SPINNER ───
+window.toast = (msg, type = 'info') => {
+  const c  = document.getElementById('toast-container');
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.innerHTML = `<span>${{success:'✅',error:'❌',info:'ℹ️'}[type]||''}</span> ${msg}`;
+  c.appendChild(el);
+  setTimeout(() => {
+    el.style.animation = 'toastOut .3s ease forwards';
+    setTimeout(() => el.remove(), 300);
+  }, 3000);
+};
+window.showSpinner = () => document.getElementById('spinner').classList.add('show');
+window.hideSpinner = () => document.getElementById('spinner').classList.remove('show');
 </script>
 </body>
 </html>
